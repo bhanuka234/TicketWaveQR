@@ -1,27 +1,22 @@
 import React, {Component} from 'react';
 import {
   StyleSheet,
-  ScrollView,
   View,
   Text,
   TextInput,
   TouchableOpacity,
-  Keyboard,
-  Alert,
+  KeyboardAvoidingView,
+  Platform,
   Image,
+  Alert,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import GradientBackground from '../components/GradientBackground';
-
-import checkLogin from '../api/checkLogin';
-import getToken from '../api/getToken';
 import LoginApi from '../api/LoginApi';
+import { StatusBar } from 'react-native';
+
 
 class Login extends Component {
-  static navigationOptions = {
-    title: 'Log In',
-  };
-
   constructor(props) {
     super(props);
     this.state = {
@@ -33,46 +28,48 @@ class Login extends Component {
 
   _validate() {
     const {url, user, pass} = this.state;
-    if (url == '') {
-      alert('Enter Url, ex: https://yourdomain.com/ ');
+    if (!url || !url.trim()) {
+      Alert.alert(
+        'Validation Error',
+        'Enter a valid Site URL (e.g. https://yourdomain.com/).',
+      );
       return false;
     }
-
-    if (url.endsWith('/') == false) {
-      alert('Insert character / at the bottom of domain ');
+    if (!url.endsWith('/')) {
+      Alert.alert('Validation Error', 'URL must end with a trailing slash (/)');
       return false;
     }
-
-    if (user == '') {
-      alert('Enter User');
+    if (!user.trim()) {
+      Alert.alert('Validation Error', 'Enter Email');
       return false;
     }
-
-    if (pass == '') {
-      alert('Enter Password');
+    if (!pass.trim()) {
+      Alert.alert('Validation Error', 'Enter Password');
       return false;
     }
+    return true;
   }
 
   _onLogin = async () => {
-    this._validate();
+    if (!this._validate()) {return;}
 
     const {navigate} = this.props.navigation;
-
     const {url, user, pass} = this.state;
 
-    await LoginApi(url, user, pass)
-      .then(resjson => {
-        if (resjson.status === 'SUCCESS' && this.saveToStorage(resjson.token)) {
-          Alert.alert('Login', resjson.msg);
-          navigate('Events');
-        } else if (resjson.status === 'FAIL') {
-          alert(resjson.msg);
-        }
-      })
-      .catch(err => {
-        console.log(err);
-      });
+    try {
+      const resjson = await LoginApi(url, user, pass);
+      if (
+        resjson.status === 'SUCCESS' &&
+        (await this.saveToStorage(resjson.token))
+      ) {
+        Alert.alert('Login Success', resjson.msg);
+        navigate('Events');
+      } else {
+        Alert.alert('Login Failed', resjson.msg);
+      }
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   async saveToStorage(token) {
@@ -80,10 +77,8 @@ class Login extends Component {
       await AsyncStorage.setItem('@token', token);
       await AsyncStorage.setItem('@isLoggedIn', '1');
       await AsyncStorage.setItem('@url', this.state.url);
-
       return true;
     }
-
     return false;
   }
 
@@ -91,45 +86,51 @@ class Login extends Component {
     const {url, user, pass} = this.state;
 
     return (
-      <GradientBackground>
-        <View style={styles.container}>
-          <Image source={require('../assets/logo.png')} styles={styles.logo} />
-          <TextInput
-            style={styles.input}
-            placeholder="Site address (URL)"
-            onChangeText={text => this.setState({url: text})}
-            autoCapitalize="none"
-            value={url}
-            placeholderTextColor="#666666"
-          />
+      <>
+        <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
+        <GradientBackground>
+          <KeyboardAvoidingView
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            style={styles.container}>
+            <Image source={require('../assets/logo.png')} style={styles.logo} />
 
-          <TextInput
-            style={styles.input}
-            placeholder="Email"
-            autoCapitalize="none"
-            onChangeText={text => this.setState({user: text})}
-            value={user}
-            placeholderTextColor="#666666"
-          />
+            <View style={styles.formContainer}>
+              <Text style={styles.title}>Login</Text>
+              <Text style={styles.subTopic}>Site Address (URL)</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="sample.com/"
+                onChangeText={text => this.setState({url: text})}
+                value={url}
+                autoCapitalize="none"
+                placeholderTextColor="#ccc"
+              />
+              <Text style={styles.subTopic}>Email</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="username@gmail.com"
+                onChangeText={text => this.setState({user: text})}
+                value={user}
+                autoCapitalize="none"
+                placeholderTextColor="#ccc"
+              />
+              <Text style={styles.subTopic}>Password</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Password"
+                onChangeText={text => this.setState({pass: text})}
+                value={pass}
+                secureTextEntry
+                placeholderTextColor="#ccc"
+              />
 
-          <TextInput
-            style={styles.input}
-            placeholder="Password"
-            autoCapitalize="none"
-            onChangeText={text => this.setState({pass:text})}
-            value={pass}
-            secureTextEntry
-            keyboardType="default"
-            placeholderTextColor="#666666"
-          />
-
-          <TouchableOpacity
-            style={styles.btn}
-            onPress={this._onLogin.bind(this)}>
-            <Text style={styles.btn_text}>Log In</Text>
-          </TouchableOpacity>
-        </View>
-      </GradientBackground>
+              <TouchableOpacity style={styles.btn} onPress={this._onLogin}>
+                <Text style={styles.btnText}>Log In</Text>
+              </TouchableOpacity>
+            </View>
+          </KeyboardAvoidingView>
+        </GradientBackground>
+      </>
     );
   }
 }
@@ -138,39 +139,59 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
-    alignItems: 'center',
-    padding: 5,
-  },
-  input: {
-    height: 40,
-    width: 250,
-    paddingLeft: 10,
-    paddingRight: 10,
-    borderRadius: 5,
-    marginBottom: 15,
-    backgroundColor: '#fff',
-    color: '#333333',
-  },
-  btn: {
-    height: 40,
-    width: 120,
-    backgroundColor: '#e86c60',
-    borderColor: '#e86c60',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 20,
-  },
-  btn_text: {
-    color: '#fff',
-    fontSize: 16,
-    borderRadius: 5,
+    paddingHorizontal: 20,
   },
   logo: {
-    width: 150,
-    height: 150,
-    resizeMode: 'contain',
-    marginBottom: 30,
+    width: 200,
+    height: 200,
     alignSelf: 'center',
+    marginBottom: 20,
+    resizeMode: 'contain',
+  },
+  formContainer: {
+    backgroundColor: '#1e1e1e',
+    borderRadius: 16,
+    padding: 25,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 10},
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    elevation: 10,
+  },
+  title: {
+    fontSize: 22,
+    color: '#fff',
+    marginBottom: 20,
+    fontWeight: 'bold',
+    textAlign: 'left',
+  },
+  subTopic:{
+    fontSize: 16,
+    color: '#ccc',
+    marginBottom: 10,
+    textAlign: 'left',
+  },
+  input: {
+    height: 50,
+    borderRadius: 8,
+    backgroundColor: '#fff',
+    marginBottom: 15,
+    paddingHorizontal: 15,
+    fontSize: 16,
+    color: '#000',
+  },
+  btn: {
+    height: 50,
+    borderRadius: 8,
+    backgroundColor: '#5C00FF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  btnText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
 

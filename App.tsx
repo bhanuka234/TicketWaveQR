@@ -22,7 +22,7 @@ function App() {
     <NavigationContainer>
       <Stack.Navigator initialRouteName="AuthLoadingScreen">
         <Stack.Screen name="AuthLoadingScreen" component={AuthLoadingScreen} />
-        <Stack.Screen name="Login" component={Login} />
+        <Stack.Screen name="Login" component={Login} options={{headerShown: false}}/>
         <Stack.Screen name="Events" component={Events} />
         <Stack.Screen name="ListTickets" component={ListTickets} />
         <Stack.Screen name="ScanBarcode" component={ScanBarcode} />
