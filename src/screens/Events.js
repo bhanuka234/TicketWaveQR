@@ -8,7 +8,7 @@ import {
   TouchableWithoutFeedback,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
+import { StatusBar } from 'react-native';
 import getToken from '../api/getToken';
 import ScanBarcode from './ScanBarcode';
 import EventsApi from '../api/EventsApi';
@@ -41,41 +41,44 @@ class Events extends Component {
 
   render() {
     return (
-      <View style={styles.container}>
-        <View style={styles.heading}>
-          <Text>Choose an event</Text>
+      <>
+        <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
+        <View style={styles.container}>
+          <View style={styles.heading}>
+            <Text>Choose an event</Text>
 
-          <TouchableOpacity onPress={() => this.logout()}>
-            <Text>Log out</Text>
-          </TouchableOpacity>
+            <TouchableOpacity onPress={() => this.logout()}>
+              <Text>Log out</Text>
+            </TouchableOpacity>
+          </View>
+
+          <FlatList
+            data={this.state.data}
+            renderItem={({item, index}) => (
+              <View
+                style={{
+                  flex: 1,
+                  backgroundColor: index % 2 == 0 ? '#eee' : '#fcfcfc',
+                  padding: 5,
+                }}>
+                <TouchableWithoutFeedback
+                  onPress={() =>
+                    this.props.navigation.navigate('ListTickets', {
+                      eid: parseInt(item.ID),
+                      title: item.post_title,
+                    })
+                  }>
+                  <View style={styles.item}>
+                    <Text style={styles.itemindex}>{index + 1}</Text>
+                    <Text style={styles.itemtext}>{item.post_title}</Text>
+                  </View>
+                </TouchableWithoutFeedback>
+              </View>
+            )}
+            keyExtractor={item => item.post_title}
+          />
         </View>
-
-        <FlatList
-          data={this.state.data}
-          renderItem={({item, index}) => (
-            <View
-              style={{
-                flex: 1,
-                backgroundColor: index % 2 == 0 ? '#eee' : '#fcfcfc',
-                padding: 5,
-              }}>
-              <TouchableWithoutFeedback
-                onPress={() =>
-                  this.props.navigation.navigate('ListTickets', {
-                    eid: parseInt(item.ID),
-                    title: item.post_title,
-                  })
-                }>
-                <View style={styles.item}>
-                  <Text style={styles.itemindex}>{index + 1}</Text>
-                  <Text style={styles.itemtext}>{item.post_title}</Text>
-                </View>
-              </TouchableWithoutFeedback>
-            </View>
-          )}
-          keyExtractor={item => item.post_title}
-        />
-      </View>
+      </>
     );
   }
 }

@@ -4,7 +4,6 @@ import {
   View,
   Text,
   TextInput,
-  TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
   Image,
@@ -14,6 +13,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import GradientBackground from '../components/GradientBackground';
 import LoginApi from '../api/LoginApi';
 import { StatusBar } from 'react-native';
+import GradientButton from '../components/GradientButton';
 
 
 class Login extends Component {
@@ -123,10 +123,8 @@ class Login extends Component {
                 secureTextEntry
                 placeholderTextColor="#ccc"
               />
+              <GradientButton text="Log In" onPress={this._onLogin} />
 
-              <TouchableOpacity style={styles.btn} onPress={this._onLogin}>
-                <Text style={styles.btnText}>Log In</Text>
-              </TouchableOpacity>
             </View>
           </KeyboardAvoidingView>
         </GradientBackground>
