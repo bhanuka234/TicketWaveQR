@@ -19,9 +19,15 @@ class ListTickets extends Component {
   }
 
   componentDidMount() {
-    const {eid} = this.props.route.params;
-    this.setState({eid: parseInt(eid)});
-  }
+  const { eid } = this.props.route.params;
+  this.setState({ eid: parseInt(eid) });
+
+  // Short delay to avoid UIManager-related crash
+  setTimeout(() => {
+    this.setState({ cameraReady: true });
+  }, 100);
+}
+
 
   handleBack = () => {
     this.props.navigation.goBack();
@@ -47,7 +53,6 @@ class ListTickets extends Component {
         />
         <GradientBackground>
           <SafeAreaView style={styles.safe}>
-            {/* Custom Header */}
             <View style={styles.header}>
               <TouchableOpacity
                 onPress={this.handleBack}
@@ -65,7 +70,6 @@ class ListTickets extends Component {
             <Text style={styles.title}>{title}</Text>
             <View style={styles.spacer} />
 
-            {/* Scan Button */}
             <GradientButton
               text={
                 <View style={styles.scanContent}>
@@ -97,16 +101,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   header: {
-  flexDirection: 'row',
-  alignItems: 'center',
-  // marginTop: 60,
-  marginLeft: -50, // Shift the whole header slightly to the left
-},
-  backBtn: {
-    // padding: 5,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginLeft: -50,
   },
+
   title: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
     color: '#fff',
     textAlign: 'left',

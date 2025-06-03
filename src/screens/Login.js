@@ -12,9 +12,8 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import GradientBackground from '../components/GradientBackground';
 import LoginApi from '../api/LoginApi';
-import { StatusBar } from 'react-native';
+import {StatusBar} from 'react-native';
 import GradientButton from '../components/GradientButton';
-
 
 class Login extends Component {
   constructor(props) {
@@ -51,7 +50,9 @@ class Login extends Component {
   }
 
   _onLogin = async () => {
-    if (!this._validate()) {return;}
+    if (!this._validate()) {
+      return;
+    }
 
     const {navigate} = this.props.navigation;
     const {url, user, pass} = this.state;
@@ -63,7 +64,7 @@ class Login extends Component {
         (await this.saveToStorage(resjson.token))
       ) {
         Alert.alert('Login Success', resjson.msg);
-        navigate('Events');
+        navigate('GetStart');
       } else {
         Alert.alert('Login Failed', resjson.msg);
       }
@@ -87,7 +88,11 @@ class Login extends Component {
 
     return (
       <>
-        <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
+        <StatusBar
+          barStyle="light-content"
+          backgroundColor="transparent"
+          translucent
+        />
         <GradientBackground>
           <KeyboardAvoidingView
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -124,7 +129,6 @@ class Login extends Component {
                 placeholderTextColor="#ccc"
               />
               <GradientButton text="Log In" onPress={this._onLogin} />
-
             </View>
           </KeyboardAvoidingView>
         </GradientBackground>
@@ -163,7 +167,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'left',
   },
-  subTopic:{
+  subTopic: {
     fontSize: 16,
     color: '#ccc',
     marginBottom: 10,
