@@ -1,8 +1,8 @@
-import React, { Component } from 'react';
-import { StyleSheet, View, Text, Alert } from 'react-native';
+import React, {Component} from 'react';
+import {StyleSheet, View, Text, Alert} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import BarcodeMask from 'react-native-barcode-mask';
-import { RNCamera } from 'react-native-camera';
+import {RNCamera} from 'react-native-camera';
 
 class ScanBarcode extends Component {
   static navigationOptions = {
@@ -26,12 +26,12 @@ class ScanBarcode extends Component {
   }
 
   componentDidMount() {
-    const { eid } = this.props.route.params;
-    this.setState({ eid: parseInt(eid) });
+    const {eid} = this.props.route.params;
+    this.setState({eid: parseInt(eid, 10)});
 
     // Delay to avoid crash related to getEventDispatcher
     setTimeout(() => {
-      this.setState({ cameraReady: true });
+      this.setState({cameraReady: true});
     }, 100);
   }
 
@@ -51,7 +51,9 @@ class ScanBarcode extends Component {
     const url = await AsyncStorage.getItem('@url');
     const eid = JSON.stringify(this.props.route.params.eid);
 
-    if (event.data === this.state.token_storate) return;
+    if (event.data === this.state.token_storate) {
+      return;
+    }
 
     if (event.data !== 'null') {
       fetch(`${url}wp-json/meup/v1/validate_ticket/`, {
@@ -69,7 +71,7 @@ class ScanBarcode extends Component {
         .then(res => res.json())
         .then(resjson => {
           Alert.alert(resjson.status, resjson.msg, [
-            { text: 'Continue', onPress: () => this.reset() },
+            {text: 'Continue', onPress: () => this.reset()},
           ]);
 
           this.setState({
@@ -97,37 +99,40 @@ class ScanBarcode extends Component {
       cameraReady,
     } = this.state;
 
-    const validJXS = valid_ticket === 'SUCCESS'
-      ? <View style={styles.success}><Text style={styles.valid_text}>V</Text></View>
-      : valid_ticket === 'FAIL'
-        ? <View style={styles.fail}><Text style={styles.valid_text}>X</Text></View>
-        : <View />;
+    const validJXS =
+      valid_ticket === 'SUCCESS' ? (
+        <View style={styles.success}>
+          <Text style={styles.valid_text}>V</Text>
+        </View>
+      ) : valid_ticket === 'FAIL' ? (
+        <View style={styles.fail}>
+          <Text style={styles.valid_text}>X</Text>
+        </View>
+      ) : (
+        <View />
+      );
 
     return (
       <View style={styles.container}>
-        {cameraReady && (
-          <RNCamera
-            ref={ref => { this.camera = ref; }}
-            style={styles.preview}
-            type={RNCamera.Constants.Type.back}
-            flashMode={RNCamera.Constants.FlashMode.on}
-            androidCameraPermissionOptions={{
-              title: 'Permission to use camera',
-              message: 'We need your permission to use your camera',
-              buttonPositive: 'Ok',
-              buttonNegative: 'Cancel',
-            }}
-            androidRecordAudioPermissionOptions={{
-              title: 'Permission to use audio recording',
-              message: 'We need your permission to use your audio',
-              buttonPositive: 'Ok',
-              buttonNegative: 'Cancel',
-            }}
-            onBarCodeRead={this.onBarCodeRead.bind(this)}
-          >
-            <BarcodeMask />
-          </RNCamera>
-        )}
+        <RNCamera
+          ref={ref => {
+            this.camera = ref;
+          }}
+          style={styles.preview}
+          type={RNCamera.Constants.Type.back}
+          flashMode={RNCamera.Constants.FlashMode.on}
+          androidCameraPermissionOptions={{
+            title: 'Permission to use camera',
+            message: 'We need your permission to use your camera',
+            buttonPositive: 'Ok',
+            buttonNegative: 'Cancel',
+          }}
+          onCameraReady={() => this.setState({cameraReady: true})}
+          onBarCodeRead={
+            cameraReady ? this.onBarCodeRead.bind(this) : undefined
+          }>
+          <BarcodeMask />
+        </RNCamera>
 
         <View style={styles.result}>
           <View style={styles.result_left}>{validJXS}</View>
@@ -137,19 +142,16 @@ class ScanBarcode extends Component {
                 Guest: <Text style={styles.value}>{name_customer}</Text>
               </Text>
             ) : null}
-
             {seat ? (
               <Text style={styles.label}>
                 Seat: <Text style={styles.value}>{seat}</Text>
               </Text>
             ) : null}
-
             {e_cal ? (
               <Text style={styles.label}>
                 Date-Time: <Text style={styles.value}>{e_cal}</Text>
               </Text>
             ) : null}
-
             {checkin_time ? (
               <Text style={styles.label}>
                 Check-in: <Text style={styles.value}>{checkin_time}</Text>
