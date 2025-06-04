@@ -27,7 +27,7 @@ function App() {
           options={{headerShown: false}}
         />
         <Stack.Screen name="GetStart" component={GetStart} options={{headerShown: false}}/>
-        <Stack.Screen name="Events" component={Events} />
+        <Stack.Screen name="Events" component={Events} options={{headerShown: false}}/>
         <Stack.Screen name="ListTickets" component={ListTickets} options={{headerShown: false}}/>
         <Stack.Screen name="ScanBarcode" component={ScanBarcode} options={{headerShown: false}} />
       </Stack.Navigator>
