@@ -8,9 +8,9 @@ import ListTickets from './src/screens/ListTickets';
 import ScanBarcode from './src/screens/ScanBarcode';
 import AuthLoadingScreen from './src/screens/AuthLoadingScreen';
 import GetStart from './src/screens/GetStart';
-
+ 
 const Stack = createNativeStackNavigator();
-
+ 
 function App() {
   return (
     // <>
@@ -34,7 +34,5 @@ function App() {
     </NavigationContainer>
   );
 }
-
+ 
 export default App;
-
-
