@@ -1,7 +1,7 @@
 import React, {Component} from 'react';
-import {View, StyleSheet, FlatList, Text, Button, TouchableOpacity } from 'react-native';
+import {View, StyleSheet, FlatList, Text, Button, TouchableOpacity,Image } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
+import GradientBackground from "../components/GradientBackground";
 
 
 class ListTickets extends Component {
@@ -35,7 +35,7 @@ class ListTickets extends Component {
         
          return (
 
-
+	  <GradientBackground>
           <View style={styles.container}>
             
              <View style={styles.heading}>
@@ -44,11 +44,21 @@ class ListTickets extends Component {
                 
               </View>
 
-            <Button  
-              title="Scan QR Code"
-              onPress={ () => this.props.navigation.navigate('ScanBarcode', { eid: this.state.eid } ) } />
+           <TouchableOpacity
+  style={styles.scan}
+  onPress={() => this.props.navigation.navigate('ScanBarcode', { eid: this.state.eid })}
+>
+  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+    <Image
+      source={require('../assets/scannericon.png')}
+      style={{ width: 20, height: 20, marginRight: 8 }}
+    />
+    <Text style={{ color: '#fff' }}>Scan</Text>
+  </View>
+</TouchableOpacity>
                    
           </View>
+</GradientBackground>
         )
         
     }
@@ -58,26 +68,19 @@ class ListTickets extends Component {
 const styles = StyleSheet.create({
    container: {
       flex: 1,
-      flexDirection: 'column',
-      backgroundColor: '#fff',
+    
+    padding: 5,
     },
-     item: {
-      padding: 10,
-      fontSize: 18,
-      
-      borderTopWidth: 1,
-      borderBottomColor: '#000000',
-      height: 44,
-    },
+    
     heading: {
-      justifyContent: 'center',
+      
       flexDirection: 'row',
-      backgroundColor: '#f4511e',
+      backgroundColor: 'transparent',
       color: '#fff',
       fontWeight: 'bold',
-      fontSize: 20,
+      fontSize: 18,
       marginBottom: 10,
-      padding: 15
+      padding: 10
 
     }
 });
