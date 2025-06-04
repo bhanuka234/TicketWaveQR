@@ -1,0 +1,41 @@
+import React from 'react';
+import {TouchableOpacity, Text, StyleSheet} from 'react-native';
+import LinearGradient from 'react-native-linear-gradient';
+import PropTypes from 'prop-types';
+
+const GradientButton = ({onPress, text, style, textStyle}) => {
+  return (
+    <TouchableOpacity onPress={onPress} activeOpacity={0.8}>
+      <LinearGradient
+        colors={['#6A11CB', '#2575FC']}
+        start={{x: 0, y: 0}}
+        end={{x: 1, y: 0}}
+        style={[styles.button, style]}>
+        <Text style={[styles.text, textStyle]}>{text}</Text>
+      </LinearGradient>
+    </TouchableOpacity>
+  );
+};
+
+GradientButton.propTypes = {
+  onPress: PropTypes.func.isRequired,
+  text: PropTypes.string.isRequired,
+  style: PropTypes.object,
+  textStyle: PropTypes.object,
+};
+
+const styles = StyleSheet.create({
+  button: {
+    height: 50,
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  text: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+});
+
+export default GradientButton;

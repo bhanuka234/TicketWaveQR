@@ -1,34 +1,28 @@
-import React, {Component} from 'react';
+import React, { Component } from 'react';
 import {
   StyleSheet,
   View,
   Text,
   TouchableOpacity,
   FlatList,
-  TouchableWithoutFeedback,
+  StatusBar,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
 import getToken from '../api/getToken';
-import ScanBarcode from './ScanBarcode';
 import EventsApi from '../api/EventsApi';
+import GradientBackground from '../components/GradientBackground';
 
 class Events extends Component {
-  static navigationOptions = {
-    title: 'List All Events',
-  };
-
   constructor(props) {
     super(props);
-
-    this.state = {data: []};
+    this.state = { data: [] };
   }
 
   componentDidMount() {
     getToken()
       .then(token => EventsApi(token))
       .then(data =>
-        this.setState({data: data.status === 'SUCCESS' ? data.events : ''}),
+        this.setState({ data: data.status === 'SUCCESS' ? data.events : [] })
       )
       .catch(err => console.log(err));
   }
@@ -41,41 +35,38 @@ class Events extends Component {
 
   render() {
     return (
-      <View style={styles.container}>
-        <View style={styles.heading}>
-          <Text>Choose an event</Text>
-
-          <TouchableOpacity onPress={() => this.logout()}>
-            <Text>Log out</Text>
-          </TouchableOpacity>
-        </View>
-
-        <FlatList
-          data={this.state.data}
-          renderItem={({item, index}) => (
-            <View
-              style={{
-                flex: 1,
-                backgroundColor: index % 2 == 0 ? '#eee' : '#fcfcfc',
-                padding: 5,
-              }}>
-              <TouchableWithoutFeedback
-                onPress={() =>
-                  this.props.navigation.navigate('ListTickets', {
-                    eid: parseInt(item.ID),
-                    title: item.post_title,
-                  })
-                }>
-                <View style={styles.item}>
-                  <Text style={styles.itemindex}>{index + 1}</Text>
-                  <Text style={styles.itemtext}>{item.post_title}</Text>
-                </View>
-              </TouchableWithoutFeedback>
-            </View>
-          )}
-          keyExtractor={item => item.post_title}
+      <GradientBackground>
+        <StatusBar
+          translucent
+          backgroundColor="transparent"
+          barStyle="light-content"
         />
-      </View>
+        <View style={styles.container}>
+          
+
+          <FlatList
+            data={this.state.data}
+            renderItem={({ item, index }) => (
+              <View style={styles.card}>
+                <Text style={styles.indexText}>{index + 1}.)</Text>
+                <Text style={styles.titleText}>{item.post_title}</Text>
+                <TouchableOpacity
+                  style={styles.viewButton}
+                  onPress={() =>
+                    this.props.navigation.navigate('ListTickets', {
+                      eid: parseInt(item.ID),
+                      title: item.post_title,
+                    })
+                  }
+                >
+                  <Text style={styles.viewText}>View</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+            keyExtractor={item => item.post_title}
+          />
+        </View>
+      </GradientBackground>
     );
   }
 }
@@ -83,35 +74,44 @@ class Events extends Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    flexDirection: 'column',
-    backgroundColor: '#fff',
+    padding: 2,
+    paddingTop: 20,
   },
-
-  item: {
-    fontSize: 16,
-    padding: 10,
-    flex: 1,
-    flexDirection: 'row',
-  },
-  itemindex: {
-    color: '#000',
-    marginRight: 15,
-    fontWeight: 'bold',
-  },
-
-  itemtext: {
-    color: '#000',
-  },
-
   heading: {
-    justifyContent: 'space-between',
+    fontSize: 24,
+    color: '#ff66cc',
+    fontWeight: 'bold',
+    marginBottom: 20,
+    alignSelf: 'center',
+  },
+  card: {
+    backgroundColor: '#222',
+    borderRadius: 10,
+    padding: 15,
+    marginBottom: 15,
     flexDirection: 'row',
-    backgroundColor: '#f4511e',
+    alignItems: 'center',
+  },
+  indexText: {
     color: '#fff',
     fontWeight: 'bold',
-    fontSize: 20,
-    marginBottom: 30,
-    padding: 15,
+    fontSize: 16,
+    marginRight: 8,
+  },
+  titleText: {
+    flex: 1,
+    color: '#fff',
+    fontSize: 16,
+  },
+  viewButton: {
+    backgroundColor: '#3c70ff',
+    paddingVertical: 6,
+    paddingHorizontal: 15,
+    borderRadius: 8,
+  },
+  viewText: {
+    color: '#fff',
+    fontWeight: 'bold',
   },
 });
 

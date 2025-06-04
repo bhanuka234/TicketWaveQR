@@ -1,89 +1,162 @@
 import React, {Component} from 'react';
-import {View, StyleSheet, FlatList, Text, Button, TouchableOpacity,Image } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  StatusBar,
+  SafeAreaView,
+  TouchableOpacity,
+} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import GradientBackground from "../components/GradientBackground";
-
+import GradientBackground from '../components/GradientBackground';
+import GradientButton from '../components/GradientButton';
 
 class ListTickets extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {eid: null};
+  }
 
-  static navigationOptions = {
-        title: 'List Tickets',
+  componentDidMount() {
+  const { eid } = this.props.route.params;
+  this.setState({ eid: parseInt(eid) });
+
+  // Short delay to avoid UIManager-related crash
+  setTimeout(() => {
+    this.setState({ cameraReady: true });
+  }, 100);
+}
+
+
+  handleBack = () => {
+    this.props.navigation.goBack();
   };
 
-    constructor(props) {
-        
-        super(props);
-        this.state = { eid: [] };
+  async logout() {
+    await AsyncStorage.multiSet([
+      ['@token', ''],
+      ['@isLoggedIn', '0'],
+    ]);
+    this.props.navigation.navigate('Login');
+  }
 
-    }
+  render() {
+    const {title} = this.props.route.params;
 
-    componentDidMount() {
-      
-      const { navigation } = this.props;
-      this.setState({eid: parseInt( JSON.stringify(this.props.route.params.eid) ) })
-        
-    }
+    return (
+      <>
+        <StatusBar
+          translucent
+          backgroundColor="transparent"
+          barStyle="light-content"
+        />
+        <GradientBackground>
+          <SafeAreaView style={styles.safe}>
+            <View style={styles.header}>
+              <TouchableOpacity
+                onPress={this.handleBack}
+                style={styles.backBtn}>
+                <View style={styles.backContent}>
+                  <Image
+                    source={require('../assets/back.png')}
+                    style={styles.backIcon}
+                    resizeMode="contain"
+                  />
+                  <Text style={styles.backText}>Events</Text>
+                </View>
+              </TouchableOpacity>
+            </View>
+            <Text style={styles.title}>{title}</Text>
+            <View style={styles.spacer} />
 
-     async logout(){
-
-      await AsyncStorage.setItem( '@token', '' );
-      await AsyncStorage.setItem( '@isLoggedIn', '0' );
-      this.props.navigation.navigate('Login');
-    }
-
-    render() {
-        
-         return (
-
-	  <GradientBackground>
-          <View style={styles.container}>
-            
-             <View style={styles.heading}>
-          
-                <Text style={styles.heading}>{this.props.route.params.title }</Text>
-                
-              </View>
-
-           <TouchableOpacity
-  style={styles.scan}
-  onPress={() => this.props.navigation.navigate('ScanBarcode', { eid: this.state.eid })}
->
-  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-    <Image
-      source={require('../assets/scannericon.png')}
-      style={{ width: 20, height: 20, marginRight: 8 }}
-    />
-    <Text style={{ color: '#fff' }}>Scan</Text>
-  </View>
-</TouchableOpacity>
-                   
-          </View>
-</GradientBackground>
-        )
-        
-    }
-
+            <GradientButton
+              text={
+                <View style={styles.scanContent}>
+                  <Image
+                    source={require('../assets/scannericon.png')}
+                    style={styles.scanIcon}
+                  />
+                  <Text style={styles.scanText}>Scan</Text>
+                </View>
+              }
+              onPress={() =>
+                this.props.navigation.navigate('ScanBarcode', {
+                  eid: this.state.eid,
+                })
+              }
+              style={styles.scanBtn}
+              textStyle={styles.btnTextWrap}
+            />
+          </SafeAreaView>
+        </GradientBackground>
+      </>
+    );
+  }
 }
 
 const styles = StyleSheet.create({
-   container: {
-      flex: 1,
-    
-    padding: 5,
-    },
-    
-    heading: {
-      
-      flexDirection: 'row',
-      backgroundColor: 'transparent',
-      color: '#fff',
-      fontWeight: 'bold',
-      fontSize: 18,
-      marginBottom: 10,
-      padding: 10
+  safe: {
+    flex: 1,
+    paddingHorizontal: 20,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginLeft: -50,
+  },
 
-    }
+  title: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#fff',
+    textAlign: 'left',
+    marginTop: 10,
+    paddingHorizontal: 10,
+  },
+  backContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+
+  backText: {
+    fontSize: 25,
+    color: '#FF71D2',
+    marginLeft: -30,
+    fontWeight: '500',
+  },
+
+  spacer: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  scanBtn: {
+    paddingHorizontal: 40,
+    paddingVertical: 12,
+    borderRadius: 10,
+    alignSelf: 'center',
+    minWidth: 200,
+    minHeight: 70,
+    marginBottom: 100,
+  },
+  scanContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  scanIcon: {
+    width: 40,
+    height: 40,
+    marginRight: 10,
+    tintColor: '#fff',
+  },
+  scanText: {
+    fontSize: 25,
+    fontWeight: '600',
+    color: '#fff',
+  },
+  btnTextWrap: {
+    paddingHorizontal: 0,
+  },
 });
-
 
 export default ListTickets;

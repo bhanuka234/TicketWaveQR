@@ -4,8 +4,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import BarcodeMask from 'react-native-barcode-mask';
 import {RNCamera} from 'react-native-camera';
 
-import getToken from '../api/getToken';
-
 class ScanBarcode extends Component {
   static navigationOptions = {
     title: 'Scan BarCode',
@@ -13,8 +11,8 @@ class ScanBarcode extends Component {
 
   constructor(props) {
     super(props);
-
     this.state = {
+      cameraReady: false,
       url: '',
       token: '',
       eid: '',
@@ -27,95 +25,14 @@ class ScanBarcode extends Component {
     };
   }
 
-  render() {
-    let validJXS = <View></View>;
+  componentDidMount() {
+    const {eid} = this.props.route.params;
+    this.setState({eid: parseInt(eid, 10)});
 
-    if (this.state.valid_ticket === 'SUCCESS') {
-      validJXS = (
-        <View style={styles.success}>
-          <Text style={styles.valid_text}>V</Text>
-        </View>
-      );
-    } else if (this.state.valid_ticket === 'FAIL') {
-      validJXS = (
-        <View style={styles.fail}>
-          <Text style={styles.valid_text}>X</Text>
-        </View>
-      );
-    }
-
-    const seatJXS = this.state.seat ? (
-      <Text style={styles.label}>
-        Seat: <Text style={styles.value}> {this.state.seat}</Text>
-      </Text>
-    ) : (
-      <View></View>
-    );
-
-    const customerJXS = this.state.name_customer ? (
-      <Text style={styles.label}>
-        Guest: <Text style={styles.value}> {this.state.name_customer}</Text>
-      </Text>
-    ) : (
-      <View></View>
-    );
-
-    const checkinJXS = this.state.checkin_time ? (
-      <Text style={styles.label}>
-        Check-in: <Text style={styles.value}> {this.state.checkin_time}</Text>
-      </Text>
-    ) : (
-      <View></View>
-    );
-
-    const ecalJXS = this.state.e_cal ? (
-      <Text style={styles.label}>
-        Date-Time: <Text style={styles.value}> {this.state.e_cal}</Text>
-      </Text>
-    ) : (
-      <View></View>
-    );
-
-    return (
-      <View style={styles.container}>
-        <RNCamera
-          ref={ref => {
-            this.camera = ref;
-          }}
-          style={styles.preview}
-          type={RNCamera.Constants.Type.back}
-          flashMode={RNCamera.Constants.FlashMode.on}
-          androidCameraPermissionOptions={{
-            title: 'Permission to use camera',
-            message: 'We need your permission to use your camera',
-            buttonPositive: 'Ok',
-            buttonNegative: 'Cancel',
-          }}
-          androidRecordAudioPermissionOptions={{
-            title: 'Permission to use audio recording',
-            message: 'We need your permission to use your audio',
-            buttonPositive: 'Ok',
-            buttonNegative: 'Cancel',
-          }}
-          onBarCodeRead={this.onBarCodeRead.bind(this)}>
-          <BarcodeMask />
-        </RNCamera>
-
-        <View style={styles.result}>
-          <View style={styles.result_left}>{validJXS}</View>
-
-          <View style={styles.result_right}>
-            {customerJXS}
-
-            {seatJXS}
-
-            {ecalJXS}
-
-            {checkinJXS}
-          </View>
-        </View>
-      </View>
-    );
+    // Delay to avoid crash related to getEventDispatcher
+    setTimeout(() => {
+      this.setState({cameraReady: true});
+    }, 100);
   }
 
   reset() {
@@ -135,9 +52,11 @@ class ScanBarcode extends Component {
     const eid = JSON.stringify(this.props.route.params.eid);
 
     if (event.data === this.state.token_storate) {
-    } else if (event.data !== 'null') {
-      // Validate Ticket
-      fetch(url + 'wp-json/meup/v1/validate_ticket/', {
+      return;
+    }
+
+    if (event.data !== 'null') {
+      fetch(`${url}wp-json/meup/v1/validate_ticket/`, {
         method: 'POST',
         headers: {
           Accept: 'application/json',
@@ -151,21 +70,9 @@ class ScanBarcode extends Component {
       })
         .then(res => res.json())
         .then(resjson => {
-          if (resjson.status === 'FAIL') {
-            Alert.alert('FAIL', resjson.msg, [
-              {
-                text: 'Continue',
-                onPress: () => this.reset(),
-              },
-            ]);
-          } else if (resjson.status === 'SUCCESS') {
-            Alert.alert('SUCCESS', resjson.msg, [
-              {
-                text: 'Continue',
-                onPress: () => this.reset(),
-              },
-            ]);
-          }
+          Alert.alert(resjson.status, resjson.msg, [
+            {text: 'Continue', onPress: () => this.reset()},
+          ]);
 
           this.setState({
             valid_ticket: resjson.status,
@@ -173,14 +80,87 @@ class ScanBarcode extends Component {
             seat: resjson.seat,
             checkin_time: resjson.checkin_time,
             e_cal: resjson.e_cal,
+            token_storate: event.data,
           });
         })
-        .catch(error => {
-          alert('error, please scan again');
+        .catch(() => {
+          Alert.alert('Error', 'Something went wrong. Please scan again.');
         });
-
-      this.setState({token_storate: event.data});
     }
+  }
+
+  render() {
+    const {
+      valid_ticket,
+      name_customer,
+      seat,
+      checkin_time,
+      e_cal,
+      cameraReady,
+    } = this.state;
+
+    const validJXS =
+      valid_ticket === 'SUCCESS' ? (
+        <View style={styles.success}>
+          <Text style={styles.valid_text}>V</Text>
+        </View>
+      ) : valid_ticket === 'FAIL' ? (
+        <View style={styles.fail}>
+          <Text style={styles.valid_text}>X</Text>
+        </View>
+      ) : (
+        <View />
+      );
+
+    return (
+      <View style={styles.container}>
+        <RNCamera
+          ref={ref => {
+            this.camera = ref;
+          }}
+          style={styles.preview}
+          type={RNCamera.Constants.Type.back}
+          flashMode={RNCamera.Constants.FlashMode.on}
+          androidCameraPermissionOptions={{
+            title: 'Permission to use camera',
+            message: 'We need your permission to use your camera',
+            buttonPositive: 'Ok',
+            buttonNegative: 'Cancel',
+          }}
+          onCameraReady={() => this.setState({cameraReady: true})}
+          onBarCodeRead={
+            cameraReady ? this.onBarCodeRead.bind(this) : undefined
+          }>
+          <BarcodeMask />
+        </RNCamera>
+
+        <View style={styles.result}>
+          <View style={styles.result_left}>{validJXS}</View>
+          <View style={styles.result_right}>
+            {name_customer ? (
+              <Text style={styles.label}>
+                Guest: <Text style={styles.value}>{name_customer}</Text>
+              </Text>
+            ) : null}
+            {seat ? (
+              <Text style={styles.label}>
+                Seat: <Text style={styles.value}>{seat}</Text>
+              </Text>
+            ) : null}
+            {e_cal ? (
+              <Text style={styles.label}>
+                Date-Time: <Text style={styles.value}>{e_cal}</Text>
+              </Text>
+            ) : null}
+            {checkin_time ? (
+              <Text style={styles.label}>
+                Check-in: <Text style={styles.value}>{checkin_time}</Text>
+              </Text>
+            ) : null}
+          </View>
+        </View>
+      </View>
+    );
   }
 }
 
@@ -194,30 +174,24 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     alignItems: 'center',
   },
-
   result: {
     position: 'absolute',
     right: 0,
     left: 0,
     bottom: 0,
-    alignItems: 'flex-start',
-    flex: 0,
     flexDirection: 'row',
     justifyContent: 'center',
   },
   result_left: {
     flex: 1,
-    backgroundColor: '#000000',
+    backgroundColor: '#000',
     height: '100%',
     justifyContent: 'center',
     alignItems: 'center',
-    fontSize: 30,
-    fontWeight: 'bold',
-    color: '#fff',
   },
   result_right: {
     flex: 4,
-    backgroundColor: '#000000',
+    backgroundColor: '#000',
     height: '100%',
     justifyContent: 'center',
     paddingLeft: 10,
@@ -228,7 +202,6 @@ const styles = StyleSheet.create({
     flex: 1,
     width: '100%',
     height: '100%',
-    color: '#fff',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -237,7 +210,6 @@ const styles = StyleSheet.create({
     flex: 1,
     width: '100%',
     height: '100%',
-    color: '#fff',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -245,10 +217,7 @@ const styles = StyleSheet.create({
     fontSize: 30,
     fontWeight: 'bold',
     color: '#fff',
-    justifyContent: 'center',
-    alignItems: 'center',
   },
-
   label: {
     color: '#ccc',
   },

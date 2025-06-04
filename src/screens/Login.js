@@ -1,20 +1,12 @@
 import React, {Component} from 'react';
-import {
-  StyleSheet,
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  KeyboardAvoidingView,
-  Platform,
-  Image,
-  Alert,
-} from 'react-native';
+import {StyleSheet, View, Text, TextInput, Image, Alert} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import GradientBackground from '../components/GradientBackground';
 import LoginApi from '../api/LoginApi';
-import { StatusBar } from 'react-native';
-
+import {StatusBar} from 'react-native';
+import GradientButton from '../components/GradientButton';
+import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
+import CustomAlert from '../components/CustomAlert';
 
 class Login extends Component {
   constructor(props) {
@@ -23,35 +15,57 @@ class Login extends Component {
       url: '',
       user: '',
       pass: '',
+      alertVisible: false,
+      alertTitle: '',
+      alertMessage: '',
+      alertHideButton: false,
     };
   }
+
+  showAlert = (title, message, hideButton = false) => {
+    this.setState({
+      alertVisible: true,
+      alertTitle: title,
+      alertMessage: message,
+      alertHideButton: hideButton,
+    });
+  };
+
+  hideAlert = () => {
+    this.setState({alertVisible: false});
+  };
 
   _validate() {
     const {url, user, pass} = this.state;
     if (!url || !url.trim()) {
-      Alert.alert(
+      this.showAlert(
         'Validation Error',
         'Enter a valid Site URL (e.g. https://yourdomain.com/).',
       );
       return false;
     }
     if (!url.endsWith('/')) {
-      Alert.alert('Validation Error', 'URL must end with a trailing slash (/)');
+      this.showAlert(
+        'Validation Error',
+        'URL must end with a trailing slash (/).',
+      );
       return false;
     }
     if (!user.trim()) {
-      Alert.alert('Validation Error', 'Enter Email');
+      this.showAlert('Validation Error', 'Enter Email.');
       return false;
     }
     if (!pass.trim()) {
-      Alert.alert('Validation Error', 'Enter Password');
+      this.showAlert('Validation Error', 'Enter Password.');
       return false;
     }
     return true;
   }
 
   _onLogin = async () => {
-    if (!this._validate()) {return;}
+    if (!this._validate()) {
+      return;
+    }
 
     const {navigate} = this.props.navigation;
     const {url, user, pass} = this.state;
@@ -62,13 +76,17 @@ class Login extends Component {
         resjson.status === 'SUCCESS' &&
         (await this.saveToStorage(resjson.token))
       ) {
-        Alert.alert('Login Success', resjson.msg);
-        navigate('Events');
+        this.showAlert('Welcome!', 'You are logged in.', true);
+        setTimeout(() => {
+          this.hideAlert();
+          navigate('GetStart');
+        }, 1500);
       } else {
-        Alert.alert('Login Failed', resjson.msg);
+        this.showAlert('Login Failed', 'Incorrect username or password.');
       }
     } catch (err) {
       console.error(err);
+      this.showAlert('Error', 'Something went wrong. Please try again.');
     }
   };
 
@@ -87,13 +105,19 @@ class Login extends Component {
 
     return (
       <>
-        <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
+        <StatusBar
+          barStyle="light-content"
+          backgroundColor="transparent"
+          translucent
+        />
         <GradientBackground>
-          <KeyboardAvoidingView
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            style={styles.container}>
+          <KeyboardAwareScrollView
+            contentContainerStyle={styles.container}
+            enableOnAndroid={true}
+            keyboardShouldPersistTaps="handled"
+            extraScrollHeight={100}
+            showsVerticalScrollIndicator={false}>
             <Image source={require('../assets/logo.png')} style={styles.logo} />
-
             <View style={styles.formContainer}>
               <Text style={styles.title}>Login</Text>
               <Text style={styles.subTopic}>Site Address (URL)</Text>
@@ -123,13 +147,17 @@ class Login extends Component {
                 secureTextEntry
                 placeholderTextColor="#ccc"
               />
-
-              <TouchableOpacity style={styles.btn} onPress={this._onLogin}>
-                <Text style={styles.btnText}>Log In</Text>
-              </TouchableOpacity>
+              <GradientButton text="Log In" onPress={this._onLogin} />
             </View>
-          </KeyboardAvoidingView>
+          </KeyboardAwareScrollView>
         </GradientBackground>
+        <CustomAlert
+          visible={this.state.alertVisible}
+          title={this.state.alertTitle}
+          message={this.state.alertMessage}
+          onClose={this.hideAlert}
+          hideButton={this.state.alertHideButton}
+        />
       </>
     );
   }
@@ -137,9 +165,10 @@ class Login extends Component {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flexGrow: 1,
     justifyContent: 'center',
     paddingHorizontal: 20,
+    // paddingBottom: 10,
   },
   logo: {
     width: 200,
@@ -165,7 +194,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'left',
   },
-  subTopic:{
+  subTopic: {
     fontSize: 16,
     color: '#ccc',
     marginBottom: 10,
