@@ -1,30 +1,34 @@
-import React, { Component } from 'react';
-import {
-  StyleSheet,
-  View,
-  Text,
-  TouchableOpacity,
-  FlatList,
-  StatusBar,
-} from 'react-native';
+import React, {Component} from 'react';
+import {StyleSheet, View, Text, FlatList, StatusBar} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import getToken from '../api/getToken';
 import EventsApi from '../api/EventsApi';
 import GradientBackground from '../components/GradientBackground';
+import GradientButton from '../components/GradientButton'; // adjust path if necessary
+import {BackHandler} from 'react-native';
 
 class Events extends Component {
   constructor(props) {
     super(props);
-    this.state = { data: [] };
+    this.state = {data: []};
   }
 
   componentDidMount() {
+    this.backHandler = BackHandler.addEventListener(
+      'hardwareBackPress',
+      () => true, // disable back action
+    );
+
     getToken()
       .then(token => EventsApi(token))
       .then(data =>
-        this.setState({ data: data.status === 'SUCCESS' ? data.events : [] })
+        this.setState({data: data.status === 'SUCCESS' ? data.events : []}),
       )
       .catch(err => console.log(err));
+  }
+
+  componentWillUnmount() {
+    if (this.backHandler) {this.backHandler.remove();}
   }
 
   async logout() {
@@ -42,25 +46,26 @@ class Events extends Component {
           barStyle="light-content"
         />
         <View style={styles.container}>
-          
+          <View style={styles.backContent}>
+            <Text style={styles.backText}>Events</Text>
+          </View>
 
           <FlatList
             data={this.state.data}
-            renderItem={({ item, index }) => (
+            renderItem={({item, index}) => (
               <View style={styles.card}>
-                <Text style={styles.indexText}>{index + 1}.)</Text>
+                <Text style={styles.indexText}>{index + 1}.</Text>
                 <Text style={styles.titleText}>{item.post_title}</Text>
-                <TouchableOpacity
-                  style={styles.viewButton}
+                <GradientButton
+                  text="View"
                   onPress={() =>
                     this.props.navigation.navigate('ListTickets', {
                       eid: parseInt(item.ID),
                       title: item.post_title,
                     })
                   }
-                >
-                  <Text style={styles.viewText}>View</Text>
-                </TouchableOpacity>
+                  style={styles.viewButton}
+                />
               </View>
             )}
             keyExtractor={item => item.post_title}
@@ -84,6 +89,19 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     alignSelf: 'center',
   },
+  backContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+
+  backText: {
+    fontSize: 25,
+    color: '#FF71D2',
+    marginLeft: 30,
+    marginTop: 30,
+    marginBottom: 30,
+    fontWeight: '500',
+  },
   card: {
     backgroundColor: '#222',
     borderRadius: 10,
@@ -104,11 +122,15 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   viewButton: {
-    backgroundColor: '#3c70ff',
     paddingVertical: 6,
     paddingHorizontal: 15,
-    borderRadius: 8,
+    borderRadius: 10,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 10,
   },
+
   viewText: {
     color: '#fff',
     fontWeight: 'bold',

@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import {StyleSheet, View, Text, TextInput, Image, Alert} from 'react-native';
+import {StyleSheet, View, Text, TextInput, Image} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import GradientBackground from '../components/GradientBackground';
 import LoginApi from '../api/LoginApi';
