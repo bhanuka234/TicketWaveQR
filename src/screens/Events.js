@@ -13,20 +13,31 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import getToken from '../api/getToken';
 import EventsApi from '../api/EventsApi';
 import GradientBackground from '../components/GradientBackground';
+import GradientButton from '../components/GradientButton'; // adjust path if necessary
+import {BackHandler} from 'react-native';
 
 class Events extends Component {
   constructor(props) {
     super(props);
-    this.state = { data: [] };
+    this.state = {data: []};
   }
 
   componentDidMount() {
+    this.backHandler = BackHandler.addEventListener(
+      'hardwareBackPress',
+      () => true, // disable back action
+    );
+
     getToken()
       .then(token => EventsApi(token))
       .then(data =>
-        this.setState({ data: data.status === 'SUCCESS' ? data.events : [] })
+        this.setState({data: data.status === 'SUCCESS' ? data.events : []}),
       )
       .catch(err => console.log(err));
+  }
+
+  componentWillUnmount() {
+    if (this.backHandler) {this.backHandler.remove();}
   }
 
   async logout() {
@@ -124,6 +135,19 @@ const styles = StyleSheet.create({
     marginLeft: -30,
     fontWeight: '500',
   },
+  backContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+
+  backText: {
+    fontSize: 25,
+    color: '#FF71D2',
+    marginLeft: 30,
+    marginTop: 30,
+    marginBottom: 30,
+    fontWeight: '500',
+  },
   card: {
     backgroundColor: '#222',
     borderRadius: 10,
@@ -144,11 +168,15 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   viewButton: {
-    backgroundColor: '#3c70ff',
     paddingVertical: 6,
     paddingHorizontal: 15,
-    borderRadius: 8,
+    borderRadius: 10,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 10,
   },
+
   viewText: {
     color: '#fff',
     fontWeight: 'bold',
