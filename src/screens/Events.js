@@ -135,19 +135,19 @@ const styles = StyleSheet.create({
     marginLeft: -30,
     fontWeight: '500',
   },
-  backContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
+  // backContent: {
+  //   flexDirection: 'row',
+  //   alignItems: 'center',
+  // },
 
-  backText: {
-    fontSize: 25,
-    color: '#FF71D2',
-    marginLeft: 30,
-    marginTop: 30,
-    marginBottom: 30,
-    fontWeight: '500',
-  },
+  // backText: {
+  //   fontSize: 25,
+  //   color: '#FF71D2',
+  //   marginLeft: 30,
+  //   marginTop: 30,
+  //   marginBottom: 30,
+  //   fontWeight: '500',
+  // },
   card: {
     backgroundColor: '#222',
     borderRadius: 10,
