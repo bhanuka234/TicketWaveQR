@@ -1,22 +1,40 @@
-// components/CustomAlert.js
 import React from 'react';
 import {Modal, View, Text, StyleSheet, TouchableOpacity} from 'react-native';
 
-const CustomAlert = ({visible, title, message, onClose, hideButton = false}) => {
+const CustomAlert = ({
+  visible,
+  title,
+  message,
+  onClose,
+  onConfirm,
+  hideButton = false,
+  confirmText = 'OK',
+  cancelText = 'Cancel',
+  showCancel = false,
+}) => {
   return (
-    <Modal
-      transparent
-      animationType="fade"
-      visible={visible}
-      onRequestClose={onClose}>
+    <Modal transparent visible={visible} animationType="fade">
       <View style={styles.overlay}>
         <View style={styles.alertBox}>
           <Text style={styles.alertTitle}>{title}</Text>
           <Text style={styles.alertMessage}>{message}</Text>
-          {!hideButton &&(
-            <TouchableOpacity style={styles.okButton} onPress={onClose}>
-            <Text style={styles.okButtonText}>OK</Text>
-          </TouchableOpacity>
+
+          {!hideButton && (
+            <View style={styles.buttonContainer}>
+              {showCancel && (
+                <TouchableOpacity
+                  style={[styles.button, styles.cancelButton]}
+                  onPress={onClose}>
+                  <Text style={styles.cancelButtonText}>{cancelText}</Text>
+                </TouchableOpacity>
+              )}
+
+              <TouchableOpacity
+                style={[styles.button, styles.confirmButton]}
+                onPress={onConfirm || onClose}>
+                <Text style={styles.confirmButtonText}>{confirmText}</Text>
+              </TouchableOpacity>
+            </View>
           )}
         </View>
       </View>
@@ -50,13 +68,32 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 20,
   },
-  okButton: {
-    backgroundColor: '#5C00FF',
-    paddingVertical: 10,
-    paddingHorizontal: 25,
-    borderRadius: 8,
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
   },
-  okButtonText: {
+  button: {
+    flex: 1,
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    borderRadius: 8,
+    marginHorizontal: 5,
+    alignItems: 'center',
+  },
+  cancelButton: {
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+    borderColor: '#666',
+  },
+  confirmButton: {
+    backgroundColor: '#5C00FF',
+  },
+  cancelButtonText: {
+    color: '#ccc',
+    fontWeight: 'bold',
+  },
+  confirmButtonText: {
     color: '#fff',
     fontWeight: 'bold',
   },

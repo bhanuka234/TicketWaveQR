@@ -7,14 +7,16 @@ import {StatusBar} from 'react-native';
 import GradientButton from '../components/GradientButton';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import CustomAlert from '../components/CustomAlert';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 class Login extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      url: '',
+      url: 'https://ticketwave.com.au/',
       user: '',
       pass: '',
+      secureText: true,
       alertVisible: false,
       alertTitle: '',
       alertMessage: '',
@@ -120,7 +122,7 @@ class Login extends Component {
             <Image source={require('../assets/logo.png')} style={styles.logo} />
             <View style={styles.formContainer}>
               <Text style={styles.title}>Login</Text>
-              <Text style={styles.subTopic}>Site Address (URL)</Text>
+              {/* <Text style={styles.subTopic}>Site Address (URL)</Text>
               <TextInput
                 style={styles.input}
                 placeholder="sample.com/"
@@ -128,7 +130,7 @@ class Login extends Component {
                 value={url}
                 autoCapitalize="none"
                 placeholderTextColor="#ccc"
-              />
+              /> */}
               <Text style={styles.subTopic}>Email</Text>
               <TextInput
                 style={styles.input}
@@ -139,14 +141,28 @@ class Login extends Component {
                 placeholderTextColor="#ccc"
               />
               <Text style={styles.subTopic}>Password</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Password"
-                onChangeText={text => this.setState({pass: text})}
-                value={pass}
-                secureTextEntry
-                placeholderTextColor="#ccc"
-              />
+              <View style={styles.passwordContainer}>
+                <TextInput
+                  style={styles.passwordInput}
+                  placeholder="Password"
+                  onChangeText={text => this.setState({pass: text})}
+                  value={pass}
+                  secureTextEntry={this.state.secureText}
+                  placeholderTextColor="#ccc"
+                />
+                <Ionicons
+                  name={this.state.secureText ? 'eye-off' : 'eye'}
+                  size={24}
+                  color="#666"
+                  onPress={() =>
+                    this.setState(prevState => ({
+                      secureText: !prevState.secureText,
+                    }))
+                  }
+                  style={styles.eyeIcon}
+                />
+              </View>
+
               <GradientButton text="Log In" onPress={this._onLogin} />
             </View>
           </KeyboardAwareScrollView>
@@ -200,6 +216,24 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     textAlign: 'left',
   },
+  passwordContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    marginBottom: 15,
+    paddingHorizontal: 10,
+  },
+  passwordInput: {
+    flex: 1,
+    height: 50,
+    fontSize: 16,
+    color: '#000',
+  },
+  eyeIcon: {
+    paddingHorizontal: 10,
+  },
+
   input: {
     height: 50,
     borderRadius: 8,

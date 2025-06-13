@@ -11,8 +11,7 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import GradientBackground from '../components/GradientBackground';
 import GradientButton from '../components/GradientButton';
-import { PermissionsAndroid, Alert } from 'react-native';
-
+import {PermissionsAndroid, Alert} from 'react-native';
 
 class ListTickets extends Component {
   constructor(props) {
@@ -21,14 +20,9 @@ class ListTickets extends Component {
   }
 
   componentDidMount() {
-      
-      const { navigation } = this.props;
-      this.setState({eid: parseInt( JSON.stringify(this.props.route.params.eid) ) })
-        
-    }
-
-
-
+    const {navigation} = this.props;
+    this.setState({eid: parseInt(JSON.stringify(this.props.route.params.eid))});
+  }
 
   handleBack = () => {
     this.props.navigation.goBack();
@@ -86,8 +80,6 @@ class ListTickets extends Component {
                   eid: this.state.eid,
                 })
               }
-              
-
               style={styles.scanBtn}
               textStyle={styles.btnTextWrap}
             />

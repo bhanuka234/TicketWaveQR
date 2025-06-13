@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, {Component} from 'react';
 import {
   StyleSheet,
   View,
@@ -7,19 +7,23 @@ import {
   FlatList,
   StatusBar,
   Image,
-  SafeAreaView
+  SafeAreaView,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import getToken from '../api/getToken';
 import EventsApi from '../api/EventsApi';
 import GradientBackground from '../components/GradientBackground';
-import GradientButton from '../components/GradientButton'; // adjust path if necessary
+import GradientButton from '../components/GradientButton';
+import CustomAlert from '../components/CustomAlert'; // Import your custom alert
 import {BackHandler} from 'react-native';
 
 class Events extends Component {
   constructor(props) {
     super(props);
-    this.state = {data: []};
+    this.state = {
+      data: [],
+      showLogoutAlert: false,
+    };
   }
 
   componentDidMount() {
@@ -37,16 +41,35 @@ class Events extends Component {
   }
 
   componentWillUnmount() {
-    if (this.backHandler) {this.backHandler.remove();}
+    if (this.backHandler) {
+      this.backHandler.remove();
+    }
   }
 
-  async logout() {
-    await AsyncStorage.setItem('@token', '');
-    await AsyncStorage.setItem('@isLoggedIn', '0');
-    this.props.navigation.navigate('Login');
-  }
+  confirmLogout = () => {
+    this.setState({showLogoutAlert: true});
+  };
 
-  // Add a function to handle going back
+  hideLogoutAlert = () => {
+    this.setState({showLogoutAlert: false});
+  };
+
+  logout = async () => {
+    try {
+      await AsyncStorage.multiSet([
+        ['@token', ''],
+        ['@isLoggedIn', '0'],
+      ]);
+      this.setState({showLogoutAlert: false});
+      this.props.navigation.reset({
+        index: 0,
+        routes: [{name: 'Login'}],
+      });
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
+
   handleBack = () => {
     this.props.navigation.goBack();
   };
@@ -62,43 +85,52 @@ class Events extends Component {
         <GradientBackground>
           <SafeAreaView style={styles.safe}>
             <View style={styles.header}>
+              <View style={styles.backContent}>
+                <Text style={styles.backText}>Events</Text>
+              </View>
+
+              {/* Logout Button */}
               <TouchableOpacity
-                onPress={this.handleBack}
-                style={styles.backBtn}>
-                <View style={styles.backContent}>
-                  <Image
-                    source={require('../assets/back.png')}
-                    style={styles.backIcon}
-                    resizeMode="contain"
-                  />
-                  <Text style={styles.backText}>Events</Text>
-                </View>
+                onPress={this.confirmLogout}
+                style={styles.logoutBtn}>
+                <Text style={styles.logoutText}>Logout</Text>
               </TouchableOpacity>
             </View>
+
             <View style={styles.container}>
               <FlatList
                 data={this.state.data}
-                renderItem={({ item, index }) => (
+                renderItem={({item, index}) => (
                   <View style={styles.card}>
-                    <Text style={styles.indexText}>{index + 1}.)</Text>
+                    <Text style={styles.indexText}>{index + 1}.</Text>
                     <Text style={styles.titleText}>{item.post_title}</Text>
-                    <TouchableOpacity
-                      style={styles.viewButton}
+                    <GradientButton
+                      text="View"
                       onPress={() =>
                         this.props.navigation.navigate('ListTickets', {
                           eid: parseInt(item.ID),
                           title: item.post_title,
                         })
                       }
-                    >
-                      <Text style={styles.viewText}>View</Text>
-                    </TouchableOpacity>
+                      style={styles.viewButton}
+                    />
                   </View>
                 )}
                 keyExtractor={item => item.post_title}
               />
             </View>
           </SafeAreaView>
+
+          <CustomAlert
+            visible={this.state.showLogoutAlert}
+            title="Logout"
+            message="Are you sure you want to logout?"
+            onClose={this.hideLogoutAlert}
+            onConfirm={this.logout}
+            showCancel={true}
+            confirmText="Logout"
+            cancelText="Cancel"
+          />
         </GradientBackground>
       </>
     );
@@ -113,41 +145,37 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     marginLeft: -50,
-  },
-
-  title: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#fff',
-    textAlign: 'left',
-    marginTop: 10,
-    paddingHorizontal: 10,
+    marginRight: -20,
+    paddingRight: 20,
   },
   backContent: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-
   backText: {
     fontSize: 25,
     color: '#FF71D2',
-    marginLeft: -30,
+    marginLeft: 50,
+    marginTop: 30,
     fontWeight: '500',
   },
-  // backContent: {
-  //   flexDirection: 'row',
-  //   alignItems: 'center',
-  // },
-
-  // backText: {
-  //   fontSize: 25,
-  //   color: '#FF71D2',
-  //   marginLeft: 30,
-  //   marginTop: 30,
-  //   marginBottom: 30,
-  //   fontWeight: '500',
-  // },
+  logoutBtn: {
+    paddingHorizontal: 15,
+    paddingVertical: 8,
+    borderRadius: 10,
+  },
+  logoutText: {
+    fontSize: 20,
+    color: '#FF71D2',
+    fontWeight: '600',
+    marginTop: 30
+  },
+  container: {
+    flex: 1,
+    marginTop: 20,
+  },
   card: {
     backgroundColor: '#222',
     borderRadius: 10,
@@ -175,11 +203,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginLeft: 10,
-  },
-
-  viewText: {
-    color: '#fff',
-    fontWeight: 'bold',
   },
 });
 
