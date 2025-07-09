@@ -108,10 +108,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    // justifyContent: 'space-between',
     marginLeft: -50,
-    // marginRight: -20,
-    // paddingRight: 20,
   },
   backContent: {
     flexDirection: 'row',
@@ -123,9 +120,6 @@ const styles = StyleSheet.create({
     marginLeft: -30,
     fontWeight: '500',
   },
-  // cardContainer: {
-  //   padding: 10,
-  // },
   cardStyle: {
     backgroundColor: '#2c2c2c',
     marginBottom: 15,
@@ -135,7 +129,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   cardActions: {
-    flexDirection: 'row', // First row: QR code, ticket number, delete icon
+    flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
@@ -146,7 +140,7 @@ const styles = StyleSheet.create({
   ticketDetails: {
     fontSize: 18,
     color: '#fff',
-    flex: 1, // Takes up remaining space for the ticket number
+    flex: 1, 
     marginLeft: 10,
   },
   deleteIcon: {
@@ -155,13 +149,13 @@ const styles = StyleSheet.create({
   },
   dateRow: {
     flexDirection: 'row',
-    justifyContent: 'flex-end', // Aligns date to the right
+    justifyContent: 'flex-end', 
     marginTop: 5,
   },
   ticketDetails2: {
     fontSize: 14,
     color: 'grey',
-    textAlign: 'right', // Align text to the right
+    textAlign: 'right',
   },
 });
 
