@@ -6,16 +6,15 @@ import {
   TouchableOpacity,
   FlatList,
   StatusBar,
-  Image,
   SafeAreaView,
+  BackHandler,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import getToken from '../api/getToken';
 import EventsApi from '../api/EventsApi';
 import GradientBackground from '../components/GradientBackground';
 import GradientButton from '../components/GradientButton';
-import CustomAlert from '../components/CustomAlert'; // Import your custom alert
-import {BackHandler} from 'react-native';
+import CustomAlert from '../components/CustomAlert';
 
 class Events extends Component {
   constructor(props) {
@@ -81,7 +80,7 @@ class Events extends Component {
           translucent
           backgroundColor="transparent"
           barStyle="light-content"
-        />
+        /> 
         <GradientBackground>
           <SafeAreaView style={styles.safe}>
             <View style={styles.header}>
@@ -117,6 +116,13 @@ class Events extends Component {
                   </View>
                 )}
                 keyExtractor={item => item.post_title}
+              />
+
+              <GradientButton
+                text="history"
+                onPress={() => this.props.navigation.navigate('History')}
+                style={{width: 150, height: 50, marginTop: 20}}
+                textStyle={{fontSize: 16}}
               />
             </View>
           </SafeAreaView>
@@ -170,7 +176,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     color: '#FF71D2',
     fontWeight: '600',
-    marginTop: 30
+    marginTop: 30,
   },
   container: {
     flex: 1,

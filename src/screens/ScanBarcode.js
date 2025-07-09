@@ -105,7 +105,7 @@ class ScanBarcode extends Component {
             flashMode="auto"
             // Barcode props
             scanBarcode={true}
-            onReadCode={event => this.onBarCodeRead(event)} // optional
+            onReadCode={event => this.onBarCodeRead(event)}
             showFrame={true} // (default false) optional, show frame with transparent layer (qr code or barcode will be read on this area ONLY), start animation for scanner, that stops when a code has been found. Frame always at center of the screen
             laserColor="red" // (default red) optional, color of laser in scanner frame
             frameColor="white"
@@ -146,8 +146,8 @@ class ScanBarcode extends Component {
     const url = await AsyncStorage.getItem('@url');
     const eid = JSON.stringify(this.props.route.params.eid);
 
-    if (event.data === this.state.token_storate) {
-    } else if (event.data !== 'null') {
+    if (event.data === this.state.token_storate) {} 
+    else if (event.data !== 'null') {
       // Validate Ticket
       fetch(url + 'wp-json/meup/v1/validate_ticket/', {
         method: 'POST',

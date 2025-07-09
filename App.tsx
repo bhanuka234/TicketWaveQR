@@ -1,5 +1,4 @@
-import React from 'react'; // Component
-// import  ActivityIndicator, StatusBar, StyleSheet, View 'react-native';
+import React from 'react';
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import Login from './src/screens/Login';
@@ -8,9 +7,10 @@ import ListTickets from './src/screens/ListTickets';
 import ScanBarcode from './src/screens/ScanBarcode';
 import AuthLoadingScreen from './src/screens/AuthLoadingScreen';
 import GetStart from './src/screens/GetStart';
- 
+import History from './src/screens/History';
+
 const Stack = createNativeStackNavigator();
- 
+
 function App() {
   return (
     // <>
@@ -30,9 +30,10 @@ function App() {
         <Stack.Screen name="Events" component={Events} options={{headerShown: false}}/>
         <Stack.Screen name="ListTickets" component={ListTickets} options={{headerShown: false}}/>
         <Stack.Screen name="ScanBarcode" component={ScanBarcode} options={{headerShown: false}} />
+        <Stack.Screen name="History" component={History} options={{headerShown: false}} />
       </Stack.Navigator>
     </NavigationContainer>
   );
 }
- 
+
 export default App;

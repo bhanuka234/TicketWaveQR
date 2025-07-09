@@ -50,8 +50,7 @@ class ListTickets extends Component {
           <SafeAreaView style={styles.safe}>
             <View style={styles.header}>
               <TouchableOpacity
-                onPress={this.handleBack}
-                style={styles.backBtn}>
+                onPress={this.handleBack}>
                 <View style={styles.backContent}>
                   <Image
                     source={require('../assets/back.png')}
@@ -100,7 +99,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginLeft: -50,
   },
-
   title: {
     fontSize: 18,
     fontWeight: 'bold',
@@ -113,14 +111,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-
   backText: {
     fontSize: 25,
     color: '#FF71D2',
     marginLeft: -30,
     fontWeight: '500',
   },
-
   spacer: {
     flex: 1,
     justifyContent: 'center',
