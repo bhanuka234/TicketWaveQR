@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import GradientBackground from '../components/GradientBackground';
 import {SafeAreaView} from 'react-native-safe-area-context';
+import BottomNavBar from '../components/BottomNavBar';
 
 class History extends Component {
   state = {
@@ -93,6 +94,9 @@ class History extends Component {
               keyExtractor={item => item.id}
               contentContainerStyle={styles.cardContainer}
             />
+
+            <BottomNavBar />
+            
           </SafeAreaView>
         </GradientBackground>
       </>
@@ -134,26 +138,26 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   qrCode: {
-    width: 40,
-    height: 40,
-  },
-  ticketDetails: {
-    fontSize: 18,
-    color: '#fff',
-    flex: 1, 
-    marginLeft: 10,
-  },
-  deleteIcon: {
     width: 30,
     height: 30,
   },
+  ticketDetails: {
+    fontSize: 15,
+    color: '#fff',
+    flex: 1,
+    marginLeft: 10,
+  },
+  deleteIcon: {
+    width: 20,
+    height: 20,
+  },
   dateRow: {
     flexDirection: 'row',
-    justifyContent: 'flex-end', 
+    justifyContent: 'flex-end',
     marginTop: 5,
   },
   ticketDetails2: {
-    fontSize: 14,
+    fontSize: 12,
     color: 'grey',
     textAlign: 'right',
   },

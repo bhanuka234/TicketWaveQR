@@ -206,7 +206,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginLeft: -10,
-    backgroundColor: 'transparent', // <- Add this line
+    backgroundColor: 'transparent', 
     zIndex: 10, // Bring it above the camera
     position: 'absolute', // Optional, to overlay on top
     top: StatusBar.currentHeight || 0,

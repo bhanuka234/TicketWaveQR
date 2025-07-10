@@ -80,7 +80,7 @@ class Events extends Component {
           translucent
           backgroundColor="transparent"
           barStyle="light-content"
-        /> 
+        />
         <GradientBackground>
           <SafeAreaView style={styles.safe}>
             <View style={styles.header}>
