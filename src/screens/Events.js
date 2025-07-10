@@ -15,6 +15,7 @@ import EventsApi from '../api/EventsApi';
 import GradientBackground from '../components/GradientBackground';
 import GradientButton from '../components/GradientButton';
 import CustomAlert from '../components/CustomAlert';
+import BottomNavBar from '../components/BottomNavBar';
 
 class Events extends Component {
   constructor(props) {
@@ -125,6 +126,7 @@ class Events extends Component {
                 textStyle={{fontSize: 16}}
               />
             </View>
+            <BottomNavBar/>
           </SafeAreaView>
 
           <CustomAlert
