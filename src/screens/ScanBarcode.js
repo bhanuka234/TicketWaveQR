@@ -3,6 +3,7 @@ import {StyleSheet, View, Text, Alert, SafeAreaView} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {TouchableOpacity, StatusBar, Image} from 'react-native';
 import {Camera, CameraType} from 'react-native-camera-kit';
+import BottomNavBar from '../components/BottomNavBar';
 
 class ScanBarcode extends Component {
   static navigationOptions = {
@@ -125,6 +126,7 @@ class ScanBarcode extends Component {
               {checkinJXS}
             </View>
           </View>
+          <BottomNavBar />
         </SafeAreaView>
       </>
     );
@@ -146,8 +148,8 @@ class ScanBarcode extends Component {
     const url = await AsyncStorage.getItem('@url');
     const eid = JSON.stringify(this.props.route.params.eid);
 
-    if (event.data === this.state.token_storate) {} 
-    else if (event.data !== 'null') {
+    if (event.data === this.state.token_storate) {
+    } else if (event.data !== 'null') {
       // Validate Ticket
       fetch(url + 'wp-json/meup/v1/validate_ticket/', {
         method: 'POST',
@@ -206,7 +208,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginLeft: -10,
-    backgroundColor: 'transparent', 
+    backgroundColor: 'transparent',
     zIndex: 10, // Bring it above the camera
     position: 'absolute', // Optional, to overlay on top
     top: StatusBar.currentHeight || 0,
