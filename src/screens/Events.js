@@ -3,25 +3,25 @@ import {
   StyleSheet,
   View,
   Text,
-  TouchableOpacity,
+  // TouchableOpacity,
   FlatList,
   StatusBar,
   SafeAreaView,
   BackHandler,
 } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+// import AsyncStorage from '@react-native-async-storage/async-storage';
 import getToken from '../api/getToken';
 import EventsApi from '../api/EventsApi';
 import GradientBackground from '../components/GradientBackground';
 import GradientButton from '../components/GradientButton';
-import CustomAlert from '../components/CustomAlert';
+// import CustomAlert from '../components/CustomAlert';
 
 class Events extends Component {
   constructor(props) {
     super(props);
     this.state = {
       data: [],
-      showLogoutAlert: false,
+      // showLogoutAlert: false,
     };
   }
 
@@ -45,29 +45,29 @@ class Events extends Component {
     }
   }
 
-  confirmLogout = () => {
-    this.setState({showLogoutAlert: true});
-  };
+  // confirmLogout = () => {
+  //   this.setState({showLogoutAlert: true});
+  // };
 
-  hideLogoutAlert = () => {
-    this.setState({showLogoutAlert: false});
-  };
+  // hideLogoutAlert = () => {
+  //   this.setState({showLogoutAlert: false});
+  // };
 
-  logout = async () => {
-    try {
-      await AsyncStorage.multiSet([
-        ['@token', ''],
-        ['@isLoggedIn', '0'],
-      ]);
-      this.setState({showLogoutAlert: false});
-      this.props.navigation.reset({
-        index: 0,
-        routes: [{name: 'Login'}],
-      });
-    } catch (error) {
-      console.error('Logout error:', error);
-    }
-  };
+  // logout = async () => {
+  //   try {
+  //     await AsyncStorage.multiSet([
+  //       ['@token', ''],
+  //       ['@isLoggedIn', '0'],
+  //     ]);
+  //     this.setState({showLogoutAlert: false});
+  //     this.props.navigation.reset({
+  //       index: 0,
+  //       routes: [{name: 'Login'}],
+  //     });
+  //   } catch (error) {
+  //     console.error('Logout error:', error);
+  //   }
+  // };
 
   handleBack = () => {
     this.props.navigation.goBack();
@@ -88,12 +88,12 @@ class Events extends Component {
                 <Text style={styles.backText}>Events</Text>
               </View>
 
-              {/* Logout Button */}
+              {/* Logout Button
               <TouchableOpacity
                 onPress={this.confirmLogout}
                 style={styles.logoutBtn}>
                 <Text style={styles.logoutText}>Logout</Text>
-              </TouchableOpacity>
+              </TouchableOpacity> */}
             </View>
 
             <View style={styles.container}>
@@ -127,7 +127,7 @@ class Events extends Component {
             </View>
           </SafeAreaView>
 
-          <CustomAlert
+          {/* <CustomAlert
             visible={this.state.showLogoutAlert}
             title="Logout"
             message="Are you sure you want to logout?"
@@ -136,7 +136,7 @@ class Events extends Component {
             showCancel={true}
             confirmText="Logout"
             cancelText="Cancel"
-          />
+          /> */}
         </GradientBackground>
       </>
     );
@@ -167,17 +167,17 @@ const styles = StyleSheet.create({
     marginTop: 30,
     fontWeight: '500',
   },
-  logoutBtn: {
-    paddingHorizontal: 15,
-    paddingVertical: 8,
-    borderRadius: 10,
-  },
-  logoutText: {
-    fontSize: 20,
-    color: '#FF71D2',
-    fontWeight: '600',
-    marginTop: 30,
-  },
+  // logoutBtn: {
+  //   paddingHorizontal: 15,
+  //   paddingVertical: 8,
+  //   borderRadius: 10,
+  // },
+  // logoutText: {
+  //   fontSize: 20,
+  //   color: '#FF71D2',
+  //   fontWeight: '600',
+  //   marginTop: 30,
+  // },
   container: {
     flex: 1,
     marginTop: 20,
