@@ -1,24 +1,30 @@
 import React from 'react';
 import {TouchableOpacity, View, Text, StyleSheet, Image} from 'react-native';
 import DropShadow from 'react-native-drop-shadow';
+import {useNavigation} from '@react-navigation/native';
 
 const BottomNavBar = () => {
+  const navigation = useNavigation();
   return (
     <View style={styles.bottomNavbarContainer}>
       {/* History */}
       <View style={styles.bottomNavHistory}>
-        <Image
-          source={require('../assets/history.png')}
-          style={styles.historyButton}
-          resizeMode="contain"
-        />
-        <Text style={styles.navText}>History</Text>
+        <TouchableOpacity onPress={() => navigation.navigate('History')}>
+          <Image
+            source={require('../assets/history.png')}
+            style={styles.historyButton}
+            resizeMode="contain"
+          />
+          <Text style={styles.navText}>History</Text>
+        </TouchableOpacity>
       </View>
 
       {/* Scan icon */}
       <DropShadow style={styles.shadowProp}>
         <View style={styles.bottomNavbarScanner}>
-          <TouchableOpacity style={styles.scanButtonContainer}>
+          <TouchableOpacity
+          style={styles.scanButtonContainer}
+          onPress={() => navigation.navigate('ScanBarcode')}>
             <Image
               source={require('../assets/scanNav.png')}
               style={styles.scanButton}
@@ -30,11 +36,13 @@ const BottomNavBar = () => {
 
       {/* Events */}
       <View style={styles.bottomNavbarEvents}>
-        <Image
-          source={require('../assets/event.png')}
-          style={styles.eventButton}
-        />
-        <Text style={styles.navText}>Events</Text>
+        <TouchableOpacity onPress={() => navigation.navigate('Events')}>
+          <Image
+            source={require('../assets/event.png')}
+            style={styles.eventButton}
+          />
+          <Text style={styles.navText}>Events</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );

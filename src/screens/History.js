@@ -96,7 +96,6 @@ class History extends Component {
             />
 
             <BottomNavBar />
-            
           </SafeAreaView>
         </GradientBackground>
       </>
