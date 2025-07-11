@@ -73,13 +73,10 @@ class History extends Component {
         <GradientBackground>
           <SafeAreaView style={styles.safe}>
             <View style={styles.header}>
-              <TouchableOpacity
-                onPress={this.handleBack}
-                style={styles.backBtn}>
+              <TouchableOpacity onPress={this.handleBack}>
                 <View style={styles.backContent}>
                   <Image
                     source={require('../assets/back.png')}
-                    style={styles.backIcon}
                     resizeMode="contain"
                   />
                   <Text style={styles.backText}>History</Text>
@@ -88,13 +85,15 @@ class History extends Component {
             </View>
 
             {/* Ticket cards list */}
-            <FlatList
-              data={this.state.tickets}
-              renderItem={this.renderTicket}
-              keyExtractor={item => item.id}
-              contentContainerStyle={styles.cardContainer}
-            />
-
+            <TouchableOpacity
+              onPress={() => this.props.navigation.navigate('TicketView')}>
+              <FlatList
+                data={this.state.tickets}
+                renderItem={this.renderTicket}
+                keyExtractor={item => item.id}
+                contentContainerStyle={styles.cardContainer}
+              />
+            </TouchableOpacity>
             <BottomNavBar />
           </SafeAreaView>
         </GradientBackground>
