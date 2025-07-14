@@ -12,6 +12,7 @@ import {
 import GradientBackground from '../components/GradientBackground';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import BottomNavBar from '../components/BottomNavBar';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 class History extends Component {
   state = {
@@ -20,30 +21,58 @@ class History extends Component {
   };
 
   componentDidMount() {
-    this.fetchScannedTickets();
+    const {route} = this.props;
+    const eid = route?.params?.eid || null;
+    this.fetchScannedTickets(eid);
   }
-  fetchScannedTickets = async () => {
+
+  fetchScannedTickets = async (eid = null) => {
     try {
-      const response = await fetch(
-        'https://ticketwave.com.au/wp-json/meup/v1/tickets_checked/',
-      );
-      console.log('Response: ', response);
+      const token = await AsyncStorage.multiGet(['@url', '@token']);
+      const url = token[0][1];
+      const authToken = token[1][1];
+
+      let response;
+      if (eid) {
+        // Filtered by Event
+        response = await fetch(`${url}wp-json/meup/v1/tickets_by_events/`, {
+          method: 'POST',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            eid: eid,
+            token: authToken,
+          }),
+        });
+      } else {
+        // All checked tickets
+        response = await fetch(`${url}wp-json/meup/v1/tickets_checked/`);
+      }
+
       const json = await response.json();
+
       if (json.status === 'SUCCESS') {
-        const tickets = json.tickets.map(ticket => ({
-          id: ticket.ticket_id,
-          ticketNum: ticket.qr_code,
-          title: ticket.event_title,
-          customerName: ticket.customer_name,
-        }));
+        const eventTickets = eid ? json.events[0]?.tickets : json.tickets;
+
+        const tickets = eventTickets
+          .filter(ticket => ticket.ticket_status === 'checked' || !eid) // filter checked if eid
+          .map(ticket => ({
+            id: ticket.ticket_id,
+            ticketNum: ticket.qr_code,
+            title: eid ? json.events[0].event_title : ticket.event_title,
+            customerName: ticket.customer_name,
+          }));
+
         this.setState({tickets, loading: false});
       } else {
-        console.error('Error fetching tickets');
+        console.error('Failed to load tickets');
         this.setState({loading: false});
       }
     } catch (error) {
+      console.error('Fetch error:', error);
       this.setState({loading: false});
-      throw new Error(console.log('Error: ', error));
     }
   };
 
@@ -72,13 +101,15 @@ class History extends Component {
         </View>
 
         <TouchableOpacity
-        onPress={() => this.props.navigation.navigate('TicketView', {
-          ticketId: item.id,
-          ticketNum: item.ticketNum,
-          eventTitle: item.title,
-          customerName: item.customerName,
-          date: '10.47pm',
-        })}>
+          onPress={() =>
+            this.props.navigation.navigate('TicketView', {
+              ticketId: item.id,
+              ticketNum: item.ticketNum,
+              eventTitle: item.title,
+              customerName: item.customerName,
+              date: '10.47pm',
+            })
+          }>
           <Text style={styles.showTicketText}>View Details</Text>
         </TouchableOpacity>
       </View>
@@ -106,16 +137,18 @@ class History extends Component {
                     source={require('../assets/back.png')}
                     resizeMode="contain"
                   />
-                  <Text style={styles.backText}>History</Text>
+                  <Text style={styles.backText}>
+                    {this.props.route.params?.eid
+                      ? 'Event History'
+                      : 'All History'}
+                  </Text>
                 </View>
               </TouchableOpacity>
             </View>
 
             {/* Ticket cards list */}
             <TouchableOpacity
-              onPress={() =>
-                this.props.navigation.navigate('TicketView')
-              }>
+              onPress={() => this.props.navigation.navigate('TicketView')}>
               {this.state.loading ? (
                 <ActivityIndicator
                   size="70"
@@ -131,7 +164,7 @@ class History extends Component {
                 />
               )}
             </TouchableOpacity>
-            <BottomNavBar />
+            <BottomNavBar hideScan={true}/>
           </SafeAreaView>
         </GradientBackground>
       </>
@@ -223,7 +256,7 @@ const styles = StyleSheet.create({
     textAlign: 'right',
   },
   spinner: {
-    marginBottom: 10,
+    marginTop: 100,
   },
   showTicketText: {
     color: '#FF71D2',

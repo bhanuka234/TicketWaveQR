@@ -63,7 +63,14 @@ class ListTickets extends Component {
             </View>
             <Text style={styles.title}>{title}</Text>
             <View style={styles.spacer} />
-
+            <GradientButton
+              text="View Scanned Tickets"
+              onPress={() =>
+                this.props.navigation.navigate('History', {
+                  eid: this.state.eid,
+                })
+              }
+            />
             <GradientButton
               text={
                 <View style={styles.scanContent}>
@@ -81,7 +88,9 @@ class ListTickets extends Component {
               }
               style={styles.scanBtn}
               textStyle={styles.btnTextWrap}
-            /><BottomNavBar hideScan={true}/>
+            />
+
+            <BottomNavBar hideScan={true} />
           </SafeAreaView>
         </GradientBackground>
       </>
@@ -129,6 +138,7 @@ const styles = StyleSheet.create({
     minWidth: 200,
     minHeight: 70,
     marginBottom: 150,
+    marginTop: 30,
   },
   scanContent: {
     flexDirection: 'row',

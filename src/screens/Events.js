@@ -7,6 +7,7 @@ import {
   FlatList,
   StatusBar,
   SafeAreaView,
+  ActivityIndicator,
   BackHandler,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -22,6 +23,7 @@ class Events extends Component {
     super(props);
     this.state = {
       data: [],
+      loading: true,
       showLogoutAlert: false,
     };
   }
@@ -35,9 +37,15 @@ class Events extends Component {
     getToken()
       .then(token => EventsApi(token))
       .then(data =>
-        this.setState({data: data.status === 'SUCCESS' ? data.events : []}),
+        this.setState({
+          data: data.status === 'SUCCESS' ? data.events : [],
+          loading: false,
+        }),
       )
-      .catch(err => console.log(err));
+      .catch(err => {
+        console.log(err);
+        this.setState({loading: false});
+      });
   }
 
   componentWillUnmount() {
@@ -98,35 +106,50 @@ class Events extends Component {
             </View>
 
             <View style={styles.container}>
-              <FlatList
-                data={this.state.data}
-                renderItem={({item, index}) => (
-                  <View style={styles.card}>
-                    <Text style={styles.indexText}>{index + 1}.</Text>
-                    <Text style={styles.titleText}>{item.post_title}</Text>
-                    <GradientButton
-                      text="View"
-                      onPress={() =>
-                        this.props.navigation.navigate('ListTickets', {
-                          eid: parseInt(item.ID),
-                          title: item.post_title,
-                        })
-                      }
-                      style={styles.viewButton}
-                    />
-                  </View>
-                )}
-                keyExtractor={item => item.post_title}
-              />
+              {this.state.loading ? (
+                <ActivityIndicator
+                  size="70"
+                  color="#ffffff"
+                  style={styles.spinner}
+                />
+              ) : (
+                <FlatList
+                  data={this.state.data}
+                  renderItem={({item, index}) => (
+                    <View style={styles.card}>
+                      <Text style={styles.indexText}>{index + 1}.</Text>
+                      <Text style={styles.titleText}>{item.post_title}</Text>
+                      <GradientButton
+                        text="View"
+                        onPress={() =>
+                          this.props.navigation.navigate('ListTickets', {
+                            eid: parseInt(item.ID),
+                            title: item.post_title,
+                          })
+                        }
+                        style={styles.viewButton}
+                      />
+                    </View>
+                  )}
+                  keyExtractor={item => item.post_title}
+                  ListEmptyComponent={
+                    <View style={styles.emptyContainer}>
+                      <Text style={styles.emptyText}>No events found</Text>
+                    </View>
+                  }
+                />
+              )}
 
-              <GradientButton
-                text="history"
-                onPress={() => this.props.navigation.navigate('History')}
-                style={{width: 150, height: 50, marginTop: 20}}
-                textStyle={{fontSize: 16}}
-              />
+              {!this.state.loading && (
+                <GradientButton
+                  text="history"
+                  onPress={() => this.props.navigation.navigate('History')}
+                  style={{width: 150, height: 50, marginTop: 20}}
+                  textStyle={{fontSize: 16}}
+                />
+              )}
             </View>
-            <BottomNavBar hideScan={true}/>
+            <BottomNavBar hideScan={true} />
           </SafeAreaView>
 
           <CustomAlert
@@ -211,6 +234,21 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginLeft: 10,
+  },
+  spinner: {
+    marginTop: 100,
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 50,
+  },
+
+  emptyText: {
+    fontSize: 18,
+    color: '#ccc',
+    textAlign: 'center',
   },
 });
 
