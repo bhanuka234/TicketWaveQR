@@ -12,6 +12,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import GradientBackground from '../components/GradientBackground';
 import GradientButton from '../components/GradientButton';
 import {PermissionsAndroid, Alert} from 'react-native';
+import BottomNavBar from '../components/BottomNavBar';
 
 class ListTickets extends Component {
   constructor(props) {
@@ -49,8 +50,7 @@ class ListTickets extends Component {
         <GradientBackground>
           <SafeAreaView style={styles.safe}>
             <View style={styles.header}>
-              <TouchableOpacity
-                onPress={this.handleBack}>
+              <TouchableOpacity onPress={this.handleBack}>
                 <View style={styles.backContent}>
                   <Image
                     source={require('../assets/back.png')}
@@ -81,7 +81,7 @@ class ListTickets extends Component {
               }
               style={styles.scanBtn}
               textStyle={styles.btnTextWrap}
-            />
+            /><BottomNavBar hideScan={true}/>
           </SafeAreaView>
         </GradientBackground>
       </>
@@ -128,7 +128,7 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     minWidth: 200,
     minHeight: 70,
-    marginBottom: 100,
+    marginBottom: 150,
   },
   scanContent: {
     flexDirection: 'row',

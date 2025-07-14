@@ -1,13 +1,13 @@
 import React from 'react';
 import {TouchableOpacity, View, Text, StyleSheet, Image} from 'react-native';
 import DropShadow from 'react-native-drop-shadow';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import {useNavigation, useRoute} from '@react-navigation/native';
 
-const BottomNavBar = () => {
+const BottomNavBar = ({hideScan = false}) => {
   const navigation = useNavigation();
   const route = useRoute();
   const currentRoute = route.name;
-  const isActive = (screen) => currentRoute === screen;
+  const isActive = screen => currentRoute === screen;
   return (
     <View style={styles.bottomNavbarContainer}>
       {/* History */}
@@ -17,28 +17,36 @@ const BottomNavBar = () => {
             source={require('../assets/history.png')}
             style={[
               styles.historyButton,
-              {tintColor: isActive('History')? '#FF71D2' : 'white'},
+              {tintColor: isActive('History') ? '#FF71D2' : 'white'},
             ]}
             resizeMode="contain"
           />
-          <Text style={[styles.navText, {color: isActive('History')? '#FF71D2': 'white'}]}>History</Text>
+          <Text
+            style={[
+              styles.navText,
+              {color: isActive('History') ? '#FF71D2' : 'white'},
+            ]}>
+            History
+          </Text>
         </TouchableOpacity>
       </View>
 
       {/* Scan icon */}
-      <DropShadow style={styles.shadowProp}>
-        <View style={styles.bottomNavbarScanner}>
-          <TouchableOpacity
-          style={styles.scanButtonContainer}
-          onPress={() => navigation.navigate('ScanBarcode')}>
-            <Image
-              source={require('../assets/scanNav.png')}
-              style={styles.scanButton}
-              resizeMode="contain"
-            />
-          </TouchableOpacity>
-        </View>
-      </DropShadow>
+      {!hideScan && (
+        <DropShadow style={styles.shadowProp}>
+          <View style={styles.bottomNavbarScanner}>
+            <TouchableOpacity
+              style={styles.scanButtonContainer}
+              onPress={() => navigation.navigate('ScanBarcode')}>
+              <Image
+                source={require('../assets/scanNav.png')}
+                style={styles.scanButton}
+                resizeMode="contain"
+              />
+            </TouchableOpacity>
+          </View>
+        </DropShadow>
+      )}
 
       {/* Events */}
       <View style={styles.bottomNavbarEvents}>
@@ -47,13 +55,16 @@ const BottomNavBar = () => {
             source={require('../assets/event.png')}
             style={[
               styles.eventButton,
-              {tintColor: isActive('Events')? '#FF71D2': 'white'},
+              {tintColor: isActive('Events') ? '#FF71D2' : 'white'},
             ]}
           />
-          <Text style={[
-            styles.navText,
-            {color: isActive('Events')? '#FF71D2': 'white'}
-          ]}>Events</Text>
+          <Text
+            style={[
+              styles.navText,
+              {color: isActive('Events') ? '#FF71D2' : 'white'},
+            ]}>
+            Events
+          </Text>
         </TouchableOpacity>
       </View>
     </View>

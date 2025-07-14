@@ -15,6 +15,7 @@ class TicketView extends Component {
     this.props.navigation.goBack();
   };
   render() {
+    const { ticketId, ticketNum, eventTitle, customerName, date } = this.props.route.params;
     return (
       <>
         <StatusBar
@@ -44,9 +45,10 @@ class TicketView extends Component {
                   style={styles.qrIcon}
                 />
                 <View style={styles.ticketInfo}>
-                  <Text style={styles.ticketText}>#TicketName</Text>
-                  <Text style={styles.ticketText}>#TicketNumber</Text>
-                  <Text style={styles.ticketDate}>16 Dec 2022, 9:30 pm</Text>
+                  <Text style={styles.ticketText}>{eventTitle}</Text>
+                  <Text style={styles.ticketText}>{ticketNum}</Text>
+                  <Text style={styles.ticketText}>{customerName}</Text>
+                  <Text style={styles.ticketDate}>{date}</Text>
                 </View>
               </View>
 
@@ -66,9 +68,9 @@ class TicketView extends Component {
               </View>
 
               {/* Show QR Code Button */}
-              <TouchableOpacity>
+              {/* <TouchableOpacity>
                 <Text style={styles.showQr}>Show QR Code</Text>
-              </TouchableOpacity>
+              </TouchableOpacity> */}
             </View>
           </SafeAreaView>
         </GradientBackground>

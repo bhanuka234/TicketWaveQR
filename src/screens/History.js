@@ -6,6 +6,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   Image,
+  ActivityIndicator,
   FlatList,
 } from 'react-native';
 import GradientBackground from '../components/GradientBackground';
@@ -14,46 +15,72 @@ import BottomNavBar from '../components/BottomNavBar';
 
 class History extends Component {
   state = {
-    tickets: [
-      {id: 1, ticketNum: '#TicketNum12345', date: '16 Dec 2022, 9.30 pm'},
-      {id: 2, ticketNum: '#TicketNum12346', date: '17 Dec 2022, 10:00 pm'},
-      {id: 3, ticketNum: '#TicketNum12347', date: '18 Dec 2022, 7.15 pm'},
-      {id: 4, ticketNum: '#TicketNum12348', date: '19 Dec 2022, 9.30 pm'},
-      {id: 5, ticketNum: '#TicketNum12349', date: '20 Dec 2022, 8.30 pm'},
-      {id: 6, ticketNum: '#TicketNum12350', date: '21 Dec 2022, 10.30 pm'},
-    ],
+    tickets: [],
+    loading: true,
+  };
+
+  componentDidMount() {
+    this.fetchScannedTickets();
+  }
+  fetchScannedTickets = async () => {
+    try {
+      const response = await fetch(
+        'https://ticketwave.com.au/wp-json/meup/v1/tickets_checked/',
+      );
+      console.log('Response: ', response);
+      const json = await response.json();
+      if (json.status === 'SUCCESS') {
+        const tickets = json.tickets.map(ticket => ({
+          id: ticket.ticket_id,
+          ticketNum: ticket.qr_code,
+          title: ticket.event_title,
+          customerName: ticket.customer_name,
+        }));
+        this.setState({tickets, loading: false});
+      } else {
+        console.error('Error fetching tickets');
+        this.setState({loading: false});
+      }
+    } catch (error) {
+      this.setState({loading: false});
+      throw new Error(console.log('Error: ', error));
+    }
   };
 
   renderTicket = ({item}) => {
     return (
       <View style={styles.cardStyle}>
         <View style={styles.cardActions}>
-          {/* QR code */}
-          <Image
-            source={require('../assets/qrCode.png')}
-            style={styles.qrCode}
-            resizeMode="contain"
-          />
-
-          {/* Ticket details (ticket number) */}
-          <Text style={styles.ticketDetails}>{item.ticketNum}</Text>
-
-          {/* Delete button */}
-          <TouchableOpacity
-            style={styles.deleteButton}
-            onPress={() => this.deleteTicket(item.id)}>
+          <View style={styles.qrRow}>
             <Image
-              source={require('../assets/delete.png')}
-              style={styles.deleteIcon}
+              source={require('../assets/qrCode.png')}
+              style={styles.qrCode}
               resizeMode="contain"
             />
-          </TouchableOpacity>
+            {/*  */}
+            <Text style={styles.ticketTitle}>{item.title}</Text>
+          </View>
+          {/* <Text style={styles.ticketLabel}>QR Code:</Text> */}
+          <Text style={styles.qrValue}>{item.ticketNum}</Text>
+          <Text style={styles.qrValue}>{item.customerName}</Text>
         </View>
 
         {/* Second row: Date aligned to the right */}
         <View style={styles.dateRow}>
-          <Text style={styles.ticketDetails2}>{item.date}</Text>
+          <Text style={styles.ticketDetails2}>10.47pm</Text>
+          {/* <Text style={styles.ticketDetails2}>{item.id}</Text> */}
         </View>
+
+        <TouchableOpacity
+        onPress={() => this.props.navigation.navigate('TicketView', {
+          ticketId: item.id,
+          ticketNum: item.ticketNum,
+          eventTitle: item.title,
+          customerName: item.customerName,
+          date: '10.47pm',
+        })}>
+          <Text style={styles.showTicketText}>View Details</Text>
+        </TouchableOpacity>
       </View>
     );
   };
@@ -86,13 +113,23 @@ class History extends Component {
 
             {/* Ticket cards list */}
             <TouchableOpacity
-              onPress={() => this.props.navigation.navigate('TicketView')}>
-              <FlatList
-                data={this.state.tickets}
-                renderItem={this.renderTicket}
-                keyExtractor={item => item.id}
-                contentContainerStyle={styles.cardContainer}
-              />
+              onPress={() =>
+                this.props.navigation.navigate('TicketView')
+              }>
+              {this.state.loading ? (
+                <ActivityIndicator
+                  size="70"
+                  color="#ffffff"
+                  style={styles.spinner}
+                />
+              ) : (
+                <FlatList
+                  data={this.state.tickets}
+                  renderItem={this.renderTicket}
+                  keyExtractor={item => item.id.toString()}
+                  contentContainerStyle={styles.cardContainer}
+                />
+              )}
             </TouchableOpacity>
             <BottomNavBar />
           </SafeAreaView>
@@ -131,9 +168,35 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   cardActions: {
+    flexDirection: 'column',
+    gap: 8,
+  },
+
+  qrRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    flexWrap: 'wrap',
+  },
+
+  ticketTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#fff',
+    marginTop: 5,
+  },
+
+  ticketLabel: {
+    color: '#fff',
+    fontSize: 14,
+    marginLeft: 10,
+  },
+
+  qrValue: {
+    flex: 1,
+    color: '#fff',
+    fontSize: 14,
+    marginLeft: 5,
+    flexWrap: 'wrap',
   },
   qrCode: {
     width: 30,
@@ -143,7 +206,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#fff',
     flex: 1,
-    marginLeft: 10,
+    // marginLeft: 10,
   },
   deleteIcon: {
     width: 20,
@@ -158,6 +221,16 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: 'grey',
     textAlign: 'right',
+  },
+  spinner: {
+    marginBottom: 10,
+  },
+  showTicketText: {
+    color: '#FF71D2',
+    fontWeight: '600',
+    fontSize: 14,
+    marginTop: 10,
+    textAlign: 'center',
   },
 });
 

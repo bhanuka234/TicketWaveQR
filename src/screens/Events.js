@@ -126,7 +126,7 @@ class Events extends Component {
                 textStyle={{fontSize: 16}}
               />
             </View>
-            <BottomNavBar/>
+            <BottomNavBar hideScan={true}/>
           </SafeAreaView>
 
           <CustomAlert
