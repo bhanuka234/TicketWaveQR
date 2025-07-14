@@ -139,17 +139,7 @@ class Events extends Component {
                   }
                 />
               )}
-
-              {!this.state.loading && (
-                <GradientButton
-                  text="history"
-                  onPress={() => this.props.navigation.navigate('History')}
-                  style={{width: 150, height: 50, marginTop: 20}}
-                  textStyle={{fontSize: 16}}
-                />
-              )}
             </View>
-            <BottomNavBar hideScan={true} />
           </SafeAreaView>
 
           <CustomAlert

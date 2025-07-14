@@ -9,13 +9,14 @@ import {
 } from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import GradientBackground from '../components/GradientBackground';
+import BottomNavBar from '../components/BottomNavBar';
 
 class TicketView extends Component {
   handleBack = () => {
     this.props.navigation.goBack();
   };
   render() {
-    const { ticketId, ticketNum, eventTitle, customerName, date } = this.props.route.params;
+    const { ticketNum, eventTitle, customerName, date } = this.props.route?.params || {};
     return (
       <>
         <StatusBar
@@ -66,12 +67,8 @@ class TicketView extends Component {
                   <Text style={styles.infoValueGold}>GOLD</Text>
                 </View>
               </View>
-
-              {/* Show QR Code Button */}
-              {/* <TouchableOpacity>
-                <Text style={styles.showQr}>Show QR Code</Text>
-              </TouchableOpacity> */}
             </View>
+            <BottomNavBar/>
           </SafeAreaView>
         </GradientBackground>
       </>

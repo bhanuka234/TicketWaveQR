@@ -21,8 +21,7 @@ class History extends Component {
   };
 
   componentDidMount() {
-    const {route} = this.props;
-    const eid = route?.params?.eid || null;
+    const eid = this.props.route?.params?.eid || null;
     this.fetchScannedTickets(eid);
   }
 
@@ -46,24 +45,22 @@ class History extends Component {
             token: authToken,
           }),
         });
-      } else {
-        // All checked tickets
-        response = await fetch(`${url}wp-json/meup/v1/tickets_checked/`);
       }
 
       const json = await response.json();
 
       if (json.status === 'SUCCESS') {
-        const eventTickets = eid ? json.events[0]?.tickets : json.tickets;
+        const event = json.events[0];
 
-        const tickets = eventTickets
-          .filter(ticket => ticket.ticket_status === 'checked' || !eid) // filter checked if eid
+        const tickets = (event?.tickets || [])
+          .filter(ticket => ticket.ticket_status === 'checked')
           .map(ticket => ({
             id: ticket.ticket_id,
             ticketNum: ticket.qr_code,
-            title: eid ? json.events[0].event_title : ticket.event_title,
+            eventTitle: eid ? json.events[0].event_title : ticket.event_title,
             customerName: ticket.customer_name,
           }));
+        console.log('Sample ticket:', event?.tickets?.[0]);
 
         this.setState({tickets, loading: false});
       } else {
@@ -76,8 +73,17 @@ class History extends Component {
     }
   };
 
-  renderTicket = ({item}) => {
-    return (
+  renderTicket = ({item}) => (
+    <TouchableOpacity
+      onPress={() =>
+        this.props.navigation.navigate('TicketView', {
+          ticketId: item.id,
+          ticketNum: item.ticketNum,
+          eventTitle: item.eventTitle,
+          customerName: item.customerName,
+          date: '10.47pm',
+        })
+      }>
       <View style={styles.cardStyle}>
         <View style={styles.cardActions}>
           <View style={styles.qrRow}>
@@ -87,38 +93,22 @@ class History extends Component {
               resizeMode="contain"
             />
             {/*  */}
-            <Text style={styles.ticketTitle}>{item.title}</Text>
+            <Text
+              style={styles.ticketTitle}
+              numberOfLines={1}
+              ellipsizeMode="middle">
+              {item.ticketNum}
+            </Text>
           </View>
-          {/* <Text style={styles.ticketLabel}>QR Code:</Text> */}
-          <Text style={styles.qrValue}>{item.ticketNum}</Text>
-          <Text style={styles.qrValue}>{item.customerName}</Text>
         </View>
 
         {/* Second row: Date aligned to the right */}
         <View style={styles.dateRow}>
           <Text style={styles.ticketDetails2}>10.47pm</Text>
-          {/* <Text style={styles.ticketDetails2}>{item.id}</Text> */}
         </View>
-
-        <TouchableOpacity
-          onPress={() =>
-            this.props.navigation.navigate('TicketView', {
-              ticketId: item.id,
-              ticketNum: item.ticketNum,
-              eventTitle: item.title,
-              customerName: item.customerName,
-              date: '10.47pm',
-            })
-          }>
-          <Text style={styles.showTicketText}>View Details</Text>
-        </TouchableOpacity>
       </View>
-    );
-  };
-
-  handleBack = () => {
-    this.props.navigation.goBack();
-  };
+    </TouchableOpacity>
+  );
 
   render() {
     return (
@@ -131,40 +121,26 @@ class History extends Component {
         <GradientBackground>
           <SafeAreaView style={styles.safe}>
             <View style={styles.header}>
-              <TouchableOpacity onPress={this.handleBack}>
-                <View style={styles.backContent}>
-                  <Image
-                    source={require('../assets/back.png')}
-                    resizeMode="contain"
-                  />
-                  <Text style={styles.backText}>
-                    {this.props.route.params?.eid
-                      ? 'Event History'
-                      : 'All History'}
-                  </Text>
-                </View>
-              </TouchableOpacity>
+              <Text style={styles.backText}>History</Text>
             </View>
 
             {/* Ticket cards list */}
-            <TouchableOpacity
-              onPress={() => this.props.navigation.navigate('TicketView')}>
-              {this.state.loading ? (
-                <ActivityIndicator
-                  size="70"
-                  color="#ffffff"
-                  style={styles.spinner}
-                />
-              ) : (
-                <FlatList
-                  data={this.state.tickets}
-                  renderItem={this.renderTicket}
-                  keyExtractor={item => item.id.toString()}
-                  contentContainerStyle={styles.cardContainer}
-                />
-              )}
-            </TouchableOpacity>
-            <BottomNavBar hideScan={true}/>
+            {this.state.loading ? (
+              <ActivityIndicator
+                size="70"
+                color="#ffffff"
+                style={styles.spinner}
+              />
+            ) : (
+              <FlatList
+                data={this.state.tickets}
+                renderItem={this.renderTicket}
+                keyExtractor={item => item.id.toString()}
+                contentContainerStyle={styles.cardContainer}
+              />
+            )}
+            {/* </TouchableOpacity> */}
+            <BottomNavBar />
           </SafeAreaView>
         </GradientBackground>
       </>
@@ -180,7 +156,10 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginLeft: -50,
+    justifyContent: 'center',
+    marginRight: 200,
+    marginTop: 20,
+    marginBottom: 30,
   },
   backContent: {
     flexDirection: 'row',
@@ -208,7 +187,8 @@ const styles = StyleSheet.create({
   qrRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    flexWrap: 'wrap',
+    flexWrap: 'nowrap',
+    overflow: 'hidden',
   },
 
   ticketTitle: {
@@ -216,6 +196,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#fff',
     marginTop: 5,
+    marginLeft: 10,
   },
 
   ticketLabel: {

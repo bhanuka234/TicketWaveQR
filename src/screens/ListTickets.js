@@ -11,7 +11,7 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import GradientBackground from '../components/GradientBackground';
 import GradientButton from '../components/GradientButton';
-import {PermissionsAndroid, Alert} from 'react-native';
+// import {PermissionsAndroid, Alert} from 'react-native';
 import BottomNavBar from '../components/BottomNavBar';
 
 class ListTickets extends Component {
@@ -21,7 +21,6 @@ class ListTickets extends Component {
   }
 
   componentDidMount() {
-    const {navigation} = this.props;
     this.setState({eid: parseInt(JSON.stringify(this.props.route.params.eid))});
   }
 
@@ -64,7 +63,16 @@ class ListTickets extends Component {
             <Text style={styles.title}>{title}</Text>
             <View style={styles.spacer} />
             <GradientButton
-              text="View Scanned Tickets"
+              text={
+                <View style={styles.scanContent}>
+                  <Image
+                    source={require('../assets/oHistory.png')}
+                    style={styles.historyIcon}
+                  />
+                  <Text style={styles.scanText}>History</Text>
+                </View>
+              }
+              style={styles.historyBtn}
               onPress={() =>
                 this.props.navigation.navigate('History', {
                   eid: this.state.eid,
@@ -90,7 +98,7 @@ class ListTickets extends Component {
               textStyle={styles.btnTextWrap}
             />
 
-            <BottomNavBar hideScan={true} />
+            {/* <BottomNavBar hideScan={true} /> */}
           </SafeAreaView>
         </GradientBackground>
       </>
@@ -140,6 +148,15 @@ const styles = StyleSheet.create({
     marginBottom: 150,
     marginTop: 30,
   },
+  historyBtn:{
+    paddingHorizontal: 40,
+    paddingVertical: 12,
+    borderRadius: 10,
+    alignSelf: 'center',
+    minWidth: 200,
+    minHeight: 70,
+    marginBottom: 20,
+  },
   scanContent: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -149,6 +166,11 @@ const styles = StyleSheet.create({
     height: 40,
     marginRight: 10,
     tintColor: '#fff',
+  },
+  historyIcon:{
+    width: 40,
+    height: 40,
+    marginRight: 10,
   },
   scanText: {
     fontSize: 25,
