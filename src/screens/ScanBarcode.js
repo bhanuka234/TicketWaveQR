@@ -7,11 +7,14 @@ import {
   TouchableOpacity,
   Platform,
   Vibration,
+  Image,
+  StatusBar,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Camera, CameraType } from 'react-native-camera-kit';
 import Icon from 'react-native-vector-icons/Entypo';
 import Sound from 'react-native-sound';
+import BottomNavBar from '../components/BottomNavBar';
 
 class ScanBarcode extends Component {
   constructor(props) {
@@ -140,6 +143,8 @@ class ScanBarcode extends Component {
 
     return (
       <View style={styles.container}>
+        <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />
+
         {/* Top Bar */}
         <View style={styles.topBar}>
           <TouchableOpacity onPress={this.toggleFlashlight}>
@@ -188,7 +193,13 @@ class ScanBarcode extends Component {
               </Text>
             )}
           </View>
+          
         </View>
+        <View style={styles.bottomBarWrapper}>
+          <BottomNavBar />
+        </View>
+
+        
       </View>
     );
   }
@@ -198,6 +209,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  bottomBarWrapper: {
+  position: 'absolute',
+  left: 20,
+  right: 20,
+  bottom: 40, // gap from the bottom of the screen
+},
   topBar: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -205,7 +222,7 @@ const styles = StyleSheet.create({
     padding: 15,
     paddingLeft: 85,
     paddingRight: 85,
-    backgroundColor: '#808080',
+    backgroundColor: '#2c2c2c',
     position: 'absolute',
     borderRadius: 15,
     elevation: 25,
