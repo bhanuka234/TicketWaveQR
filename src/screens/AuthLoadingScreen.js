@@ -41,15 +41,22 @@ export default class AuthLoadingScreen extends Component {
   }
 
   _loadData = async () => {
-    getToken()
-      .then(token => checkLogin(token))
-      .then(res => {
-        this.props.navigation.navigate(
-          res.status === 'SUCCESS' ? 'Login' : 'Login'
-        );
-      })
-      .catch(() => this.props.navigation.navigate('Login'));
-  };
+  try {
+    const token = await getToken();
+    console.log('🔐 Token:', token);
+
+    const res = await checkLogin(token);
+    console.log('✅ Login Check Result:', res);
+
+    this.props.navigation.navigate(
+      res.status === 'SUCCESS' ? 'Login' : 'Login',
+    );
+  } catch (err) {
+    console.log('❌ Error in auth flow:', err);
+    this.props.navigation.navigate('Login');
+  }
+};
+
 }
 
 AuthLoadingScreen.propTypes = {
