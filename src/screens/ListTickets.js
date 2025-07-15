@@ -21,7 +21,9 @@ class ListTickets extends Component {
   }
 
   componentDidMount() {
-    this.setState({eid: parseInt(JSON.stringify(this.props.route.params.eid))});
+    const eid = parseInt(JSON.stringify(this.props.route.params.eid));
+    this.setState({eid});
+    AsyncStorage.setItem('@selectedEid', eid.toString());
   }
 
   handleBack = () => {
@@ -97,8 +99,6 @@ class ListTickets extends Component {
               style={styles.scanBtn}
               textStyle={styles.btnTextWrap}
             />
-
-            {/* <BottomNavBar hideScan={true} /> */}
           </SafeAreaView>
         </GradientBackground>
       </>
@@ -148,7 +148,7 @@ const styles = StyleSheet.create({
     marginBottom: 150,
     marginTop: 30,
   },
-  historyBtn:{
+  historyBtn: {
     paddingHorizontal: 40,
     paddingVertical: 12,
     borderRadius: 10,
@@ -167,7 +167,7 @@ const styles = StyleSheet.create({
     marginRight: 10,
     tintColor: '#fff',
   },
-  historyIcon:{
+  historyIcon: {
     width: 40,
     height: 40,
     marginRight: 10,

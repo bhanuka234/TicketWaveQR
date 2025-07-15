@@ -20,8 +20,14 @@ class History extends Component {
     loading: true,
   };
 
-  componentDidMount() {
-    const eid = this.props.route?.params?.eid || null;
+  async componentDidMount() {
+    let eid = this.props.route?.params?.eid;
+    if (!eid) {
+      const storedEid = await AsyncStorage.getItem('@selectedEid');
+      if (storedEid) {
+        eid = parseInt(storedEid);
+      }
+    }
     this.fetchScannedTickets(eid);
   }
 
@@ -60,7 +66,6 @@ class History extends Component {
             eventTitle: eid ? json.events[0].event_title : ticket.event_title,
             customerName: ticket.customer_name,
           }));
-        console.log('Sample ticket:', event?.tickets?.[0]);
 
         this.setState({tickets, loading: false});
       } else {
@@ -139,7 +144,6 @@ class History extends Component {
                 contentContainerStyle={styles.cardContainer}
               />
             )}
-            {/* </TouchableOpacity> */}
             <BottomNavBar />
           </SafeAreaView>
         </GradientBackground>

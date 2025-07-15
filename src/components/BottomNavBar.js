@@ -2,17 +2,28 @@ import React from 'react';
 import {TouchableOpacity, View, Text, StyleSheet, Image} from 'react-native';
 import DropShadow from 'react-native-drop-shadow';
 import {useNavigation, useRoute} from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const BottomNavBar = ({hideScan = false}) => {
+const BottomNavBar = () => {
   const navigation = useNavigation();
   const route = useRoute();
   const currentRoute = route.name;
   const isActive = screen => currentRoute === screen;
+
+  const handleHistoryPress = async () => {
+    const eid = await AsyncStorage.getItem('@selectedEid');
+    if (eid) {
+      navigation.navigate('History', {eid: parseInt(eid)});
+    } else {
+      alert('Please select an event first.');
+    }
+  };
+
   return (
     <View style={styles.bottomNavbarContainer}>
       {/* History */}
       <View style={styles.bottomNavHistory}>
-        <TouchableOpacity onPress={() => navigation.navigate('History')}>
+        <TouchableOpacity onPress={handleHistoryPress}>
           <Image
             source={require('../assets/history.png')}
             style={[
@@ -32,21 +43,20 @@ const BottomNavBar = ({hideScan = false}) => {
       </View>
 
       {/* Scan icon */}
-      {!hideScan && (
-        <DropShadow style={styles.shadowProp}>
-          <View style={styles.bottomNavbarScanner}>
-            <TouchableOpacity
-              style={styles.scanButtonContainer}
-              onPress={() => navigation.navigate('ScanBarcode')}>
-              <Image
-                source={require('../assets/scanNav.png')}
-                style={styles.scanButton}
-                resizeMode="contain"
-              />
-            </TouchableOpacity>
-          </View>
-        </DropShadow>
-      )}
+
+      <DropShadow style={styles.shadowProp}>
+        <View style={styles.bottomNavbarScanner}>
+          <TouchableOpacity
+            style={styles.scanButtonContainer}
+            onPress={() => navigation.navigate('ScanBarcode')}>
+            <Image
+              source={require('../assets/scanNav.png')}
+              style={styles.scanButton}
+              resizeMode="contain"
+            />
+          </TouchableOpacity>
+        </View>
+      </DropShadow>
 
       {/* Events */}
       <View style={styles.bottomNavbarEvents}>

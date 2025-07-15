@@ -148,8 +148,8 @@ class ScanBarcode extends Component {
     const url = await AsyncStorage.getItem('@url');
     const eid = JSON.stringify(this.props.route.params.eid);
 
-    if (event.data === this.state.token_storate) {
-    } else if (event.data !== 'null') {
+    if (event.data === this.state.token_storate) {}
+    else if (event.data !== 'null') {
       // Validate Ticket
       fetch(url + 'wp-json/meup/v1/validate_ticket/', {
         method: 'POST',
