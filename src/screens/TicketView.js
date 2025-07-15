@@ -104,11 +104,13 @@ const styles = StyleSheet.create({
   ticketRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
   },
   qrIcon: {
     width: 40,
     height: 40,
     marginRight: 10,
+    marginBottom: 80,
   },
   ticketInfo: {
     flex: 1,
@@ -120,7 +122,8 @@ const styles = StyleSheet.create({
   ticketDate: {
     color: '#CCCCCC',
     fontSize: 14,
-    marginTop: 5,
+    // marginTop: 5,
+    marginLeft: 150,
   },
   line: {
     borderBottomWidth: 1,
