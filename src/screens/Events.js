@@ -1,4 +1,4 @@
-import React, {Component} from 'react';
+import React, { Component } from 'react';
 import {
   StyleSheet,
   View,
@@ -8,18 +8,20 @@ import {
   SafeAreaView,
   ActivityIndicator,
   BackHandler,
+  TouchableOpacity
 } from 'react-native';
 import getToken from '../api/getToken';
 import EventsApi from '../api/EventsApi';
 import GradientBackground from '../components/GradientBackground';
 import GradientButton from '../components/GradientButton';
+import Icon from 'react-native-vector-icons/Entypo';
 
 class Events extends Component {
   constructor(props) {
     super(props);
     this.state = {
       data: [],
-      
+
     };
   }
 
@@ -39,7 +41,7 @@ class Events extends Component {
       )
       .catch(err => {
         console.log(err);
-        this.setState({loading: false});
+        this.setState({ loading: false });
       });
   }
 
@@ -49,13 +51,12 @@ class Events extends Component {
     }
   }
 
-  
-
-  
-
-  handleBack = () => {
-    this.props.navigation.goBack();
+  goToSettings = () => {
+    this.props.navigation.navigate('Setting');
   };
+
+
+
 
   render() {
     return (
@@ -72,7 +73,10 @@ class Events extends Component {
                 <Text style={styles.backText}>Events</Text>
               </View>
 
-              
+              {/* Setting Icon at the end of the header */}
+              <TouchableOpacity onPress={this.goToSettings} style={styles.set}>
+                <Icon name="cog" size={26} color="#fff" />
+              </TouchableOpacity>
             </View>
 
             <View style={styles.container}>
@@ -85,7 +89,7 @@ class Events extends Component {
               ) : (
                 <FlatList
                   data={this.state.data}
-                  renderItem={({item, index}) => (
+                  renderItem={({ item, index }) => (
                     <View style={styles.card}>
                       <Text style={styles.indexText}>{index + 1}.</Text>
                       <Text style={styles.titleText}>{item.post_title}</Text>
@@ -112,7 +116,7 @@ class Events extends Component {
             </View>
           </SafeAreaView>
 
-          
+
         </GradientBackground>
       </>
     );
@@ -131,6 +135,10 @@ const styles = StyleSheet.create({
     marginLeft: -50,
     marginRight: -20,
     paddingRight: 20,
+    
+  },
+  set: {
+    paddingTop:30,
   },
   backContent: {
     flexDirection: 'row',

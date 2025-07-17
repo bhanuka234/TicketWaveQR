@@ -11,7 +11,8 @@ import {
 } from 'react-native';
 import GradientBackground from '../components/GradientBackground';
 import GradientButton from '../components/GradientButton';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons'; // <-- Icon import
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons'; // <-- MaterialCommunityIcons import
+import Entypo from 'react-native-vector-icons/Entypo'; // <-- Entypo import
 import EventDetails from '../api/EventDetails';
 import getToken from '../api/getToken';
 import RNHTMLtoPDF from 'react-native-html-to-pdf';
@@ -124,7 +125,9 @@ class ListTickets extends Component {
     }
   };
 
-
+  goToSettings = () => {
+    this.props.navigation.navigate('Setting');
+  };
 
   render() {
     const { title } = this.props.route.params;
@@ -147,8 +150,12 @@ class ListTickets extends Component {
                     resizeMode="contain"
                   />
                   <Text style={styles.backText}>Events</Text>
+                  
                 </View>
               </TouchableOpacity>
+              <TouchableOpacity onPress={this.goToSettings}>
+                    <Entypo name="cog" size={30} color="#fff" />
+                  </TouchableOpacity>
             </View>
 
             <Text style={styles.title}>{title}</Text>
@@ -201,7 +208,7 @@ class ListTickets extends Component {
                 <GradientButton
                   text={
                     <View style={styles.pdfContent}>
-                      <Icon
+                      <MaterialCommunityIcons
                         name="file-pdf-box"
                         size={26}
                         color="#fff"
@@ -267,6 +274,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginLeft: -50,
+    justifyContent: 'space-between',
   },
   title: {
     fontSize: 18,
