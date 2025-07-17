@@ -43,7 +43,6 @@ const BottomNavBar = () => {
       </View>
 
       {/* Scan icon */}
-
       <DropShadow style={styles.shadowProp}>
         <View style={styles.bottomNavbarScanner}>
           <TouchableOpacity
@@ -108,15 +107,15 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     padding: 15,
   },
-  shadowProp: {
-    shadowColor: '#FD23EE',
-    shadowOffset: {width: 0, height: 0},
-    shadowOpacity: 1,
-    shadowRadius: 20,
-    elevation: 30,
-    alignSelf: 'center',
-    marginTop: -30,
-  },
+  // shadowProp: {
+  //   shadowColor: '#FD23EE',
+  //   shadowOffset: {width: 0, height: 0},
+  //   shadowOpacity: 1,
+  //   shadowRadius: 20,
+  //   elevation: 30,
+  //   alignSelf: 'center',
+  //   marginTop: -30,
+  // },
   bottomNavbarEvents: {
     alignItems: 'center',
     justifyContent: 'space-between',
