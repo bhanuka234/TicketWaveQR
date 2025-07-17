@@ -43,7 +43,7 @@ const BottomNavBar = () => {
       </View>
 
       {/* Scan icon */}
-      <DropShadow style={styles.shadowProp}>
+      {/* <DropShadow style={styles.shadowProp}> */}
         <View style={styles.bottomNavbarScanner}>
           <TouchableOpacity
             style={styles.scanButtonContainer}
@@ -55,7 +55,7 @@ const BottomNavBar = () => {
             />
           </TouchableOpacity>
         </View>
-      </DropShadow>
+      {/* </DropShadow> */}
 
       {/* Events */}
       <View style={styles.bottomNavbarEvents}>

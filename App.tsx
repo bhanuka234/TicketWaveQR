@@ -28,41 +28,13 @@ function App() {
           component={Login}
           options={{headerShown: false}}
         />
-        <Stack.Screen
-          name="GetStart"
-          component={GetStart}
-          options={{headerShown: false}}
-        />
-        <Stack.Screen
-          name="Events"
-          component={Events}
-          options={{headerShown: false}}
-        />
-        <Stack.Screen
-          name="ListTickets"
-          component={ListTickets}
-          options={{headerShown: false}}
-        />
-        <Stack.Screen
-          name="ScanBarcode"
-          component={ScanBarcode}
-          options={{headerShown: false}}
-        />
-        <Stack.Screen
-          name="History"
-          component={History}
-          options={{headerShown: false}}
-        />
-        <Stack.Screen
-          name="Setting"
-          component={Setting}
-          options={{headerShown: false}}
-        />
-        <Stack.Screen
-          name="TicketView"
-          component={TicketView}
-          options={{headerShown: false}}
-        />
+        <Stack.Screen name="GetStart" component={GetStart} options={{headerShown: false}}/>
+        <Stack.Screen name="Events" component={Events} options={{headerShown: false}}/>
+        <Stack.Screen name="ListTickets" component={ListTickets} options={{headerShown: false}}/>
+        <Stack.Screen name="ScanBarcode" component={ScanBarcode} options={{headerShown: false}} />
+        <Stack.Screen name="History" component={History} options={{headerShown: false}} />
+        <Stack.Screen name="Setting" component={Setting} options={{headerShown: false}}/>
+        <Stack.Screen name='TicketView' component={TicketView} options={{headerShown:false}}/>
       </Stack.Navigator>
     </NavigationContainer>
   );

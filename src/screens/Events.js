@@ -19,8 +19,7 @@ class Events extends Component {
     super(props);
     this.state = {
       data: [],
-      loading: true,
-      showLogoutAlert: false,
+      
     };
   }
 
@@ -50,6 +49,14 @@ class Events extends Component {
     }
   }
 
+  
+
+  
+
+  handleBack = () => {
+    this.props.navigation.goBack();
+  };
+
   render() {
     return (
       <>
@@ -64,6 +71,8 @@ class Events extends Component {
               <View style={styles.backContent}>
                 <Text style={styles.backText}>Events</Text>
               </View>
+
+              
             </View>
 
             <View style={styles.container}>
@@ -102,6 +111,8 @@ class Events extends Component {
               )}
             </View>
           </SafeAreaView>
+
+          
         </GradientBackground>
       </>
     );

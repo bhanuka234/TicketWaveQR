@@ -1,4 +1,4 @@
-import React, {Component} from 'react';
+import React, { Component } from 'react';
 import {
   View,
   Text,
@@ -11,19 +11,19 @@ import {
 } from 'react-native';
 import GradientBackground from '../components/GradientBackground';
 import GradientButton from '../components/GradientButton';
-// import {PermissionsAndroid, Alert} from 'react-native';
-import BottomNavBar from '../components/BottomNavBar';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons'; // <-- Icon import
 import EventDetails from '../api/EventDetails';
 import getToken from '../api/getToken';
 import RNHTMLtoPDF from 'react-native-html-to-pdf';
 
+
+
 class ListTickets extends Component {
   constructor(props) {
     super(props);
-    const {eid} = props.route.params;
+    const { eid } = props.route.params;
     this.state = {
-      eid: parseInt(eid), // Set eid directly from route params
+      eid: parseInt(eid),       // Set eid directly from route params
       totalTickets: 0,
       soldTickets: 0,
       usedTickets: 0,
@@ -53,12 +53,13 @@ class ListTickets extends Component {
     }
   }
 
+
   handleBack = () => {
     this.props.navigation.goBack();
   };
   generatePdf = async () => {
-    const {title} = this.props.route.params;
-    const {soldTickets, usedTickets, remainingTickets, tickets} = this.state;
+    const { title } = this.props.route.params;
+    const { soldTickets, usedTickets, remainingTickets, tickets } = this.state;
 
     const ticketRows = tickets
       .map((ticket, index) => {
@@ -70,13 +71,9 @@ class ListTickets extends Component {
         return `
         <tr style="${rowStyle}">
           <td style="border: 1px solid #999; padding: 6px;">${index + 1}</td>
-          <td style="border: 1px solid #999; padding: 6px;">${
-            ticket.customer_name
-          }</td>
+          <td style="border: 1px solid #999; padding: 6px;">${ticket.customer_name}</td>
           <td style="border: 1px solid #999; padding: 6px;">${ticket.email}</td>
-          <td style="border: 1px solid #999; padding: 6px;">${
-            ticket.qr_code
-          }</td>
+          <td style="border: 1px solid #999; padding: 6px;">${ticket.qr_code}</td>
           <td style="border: 1px solid #999; padding: 6px; font-weight: bold;">
             ${ticket.ticket_status || 'Not Checked'}
           </td>
@@ -127,8 +124,10 @@ class ListTickets extends Component {
     }
   };
 
+
+
   render() {
-    const {title} = this.props.route.params;
+    const { title } = this.props.route.params;
 
     return (
       <>
@@ -167,9 +166,7 @@ class ListTickets extends Component {
               </View>
               <View style={styles.detailRow}>
                 <Text style={styles.detailLabel}>Remaining Tickets</Text>
-                <Text style={styles.detailValue}>
-                  {this.state.remainingTickets}
-                </Text>
+                <Text style={styles.detailValue}>{this.state.remainingTickets}</Text>
               </View>
 
               {/* <View style={styles.detailRow}>

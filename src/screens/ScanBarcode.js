@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Platform,
   Vibration,
+  
   StatusBar,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -35,7 +36,6 @@ class ScanBarcode extends Component {
 
   componentDidMount() {
     try {
-      console.log("beep sound on");
       Sound.setCategory('Playback');
       this.beepSound = new Sound(require('../assets/beep.mp3'), (error) => {
         if (error) {
