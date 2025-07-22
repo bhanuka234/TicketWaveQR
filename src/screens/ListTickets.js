@@ -13,6 +13,7 @@ import GradientBackground from '../components/GradientBackground';
 import GradientButton from '../components/GradientButton';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons'; // <-- MaterialCommunityIcons import
 import Entypo from 'react-native-vector-icons/Entypo'; // <-- Entypo import
+import Tickets_by_events from '../api/Tickets_by_events';
 import EventDetails from '../api/EventDetails';
 import getToken from '../api/getToken';
 import RNHTMLtoPDF from 'react-native-html-to-pdf';
@@ -30,29 +31,57 @@ class ListTickets extends Component {
       usedTickets: 0,
       remainingTickets: 0,
       tickets: [],
+      eventTime: '', 
+
     };
   }
 
-  async componentDidMount() {
-    try {
-      const token = await getToken();
-      const eventData = await EventDetails(token, this.state.eid);
+  // async componentDidMount() {
+  //   try {
+  //     const token = await getToken();
+  //     const eventData = await Tickets_by_events(token, this.state.eid);
 
-      if (eventData) {
-        this.setState({
-          totalTickets: eventData.total_tickets || 0,
-          usedTickets: eventData.tickets_checked || 0,
-          remainingTickets: eventData.tickets_available || 0,
-          soldTickets:
-            (eventData.tickets_checked || 0) +
-            (eventData.tickets_available || 0),
-          tickets: eventData.tickets || [], // <-- store tickets
-        });
-      }
-    } catch (error) {
-      console.error('Failed to fetch event ticket data:', error);
+  //     if (eventData) {
+  //       this.setState({
+  //         totalTickets: eventData.total_tickets || 0,
+  //         usedTickets: eventData.tickets_checked || 0,
+  //         remainingTickets: eventData.tickets_available || 0,
+  //         soldTickets:
+  //           (eventData.tickets_checked || 0) +
+  //           (eventData.tickets_available || 0),
+  //         tickets: eventData.tickets || [], // <-- store tickets
+  //       });
+  //     }
+  //   } catch (error) {
+  //     console.error('Failed to fetch event ticket data:', error);
+  //   }
+  // }
+async componentDidMount() {
+  try {
+    const token = await getToken(); 
+
+    const [eventData, eventInfo] = await Promise.all([
+      Tickets_by_events(token, this.state.eid),
+      EventDetails(token[0], this.state.eid), // <-- pass only base URL
+    ]);
+
+    if (eventData) {
+      this.setState({
+        totalTickets: eventData.total_tickets || 0,
+        usedTickets: eventData.tickets_checked || 0,
+        remainingTickets: eventData.tickets_available || 0,
+        soldTickets:
+          (eventData.tickets_checked || 0) +
+          (eventData.tickets_available || 0),
+        tickets: eventData.tickets || [],
+        eventTime: eventInfo.event_time || '', // now safely accessing parsed time
+      });
     }
+  } catch (error) {
+    console.error('Failed to fetch ticket/event data:', error);
   }
+}
+
 
 
   handleBack = () => {
@@ -60,7 +89,7 @@ class ListTickets extends Component {
   };
   generatePdf = async () => {
     const { title } = this.props.route.params;
-    const { soldTickets, usedTickets, remainingTickets, tickets } = this.state;
+    const { soldTickets, usedTickets, remainingTickets, tickets,eventTime } = this.state;
 
     const ticketRows = tickets
       .map((ticket, index) => {
@@ -85,6 +114,7 @@ class ListTickets extends Component {
     const htmlContent = `
     <div style="font-family: Arial, sans-serif; padding: 20px;">
       <h1 style="text-align:center; color:#333;">${title}</h1>
+      <p style="text-align:center; color:#333;">${eventTime}
       <table style="width:100%; font-size:16px; margin-bottom:20px;">
         <tr><td><strong>Sold Tickets:</strong></td><td>${soldTickets}</td></tr>
         <tr><td><strong>Used Tickets:</strong></td><td>${usedTickets}</td></tr>
@@ -175,16 +205,16 @@ class ListTickets extends Component {
                 <Text style={styles.detailLabel}>Remaining Tickets</Text>
                 <Text style={styles.detailValue}>{this.state.remainingTickets}</Text>
               </View>
-
-              {/* <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}>Selected Time</Text>
+              
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}></Text>
 
               </View>
               <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}>From</Text>
+                <Text style={styles.detailLabel}>Time</Text>
                 <View style={styles.dateRow}>
-                  <Text style={styles.detailValue}>2025-07-15</Text>
-                  <Icon
+                  <Text style={styles.detailValue}>{this.state.eventTime}</Text>
+                  <MaterialCommunityIcons
                     name="calendar-month"
                     size={20}
                     color="#FF71D2"
@@ -192,18 +222,7 @@ class ListTickets extends Component {
                   />
                 </View>
               </View>
-              <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}>To</Text>
-                <View style={styles.dateRow}>
-                  <Text style={styles.detailValue}>2025-07-16</Text>
-                  <Icon
-                    name="calendar-month"
-                    size={20}
-                    color="#FF71D2"
-                    style={styles.iconMargin}
-                  />
-                </View>
-              </View> */}
+              
               <View style={styles.pdfbutton}>
                 <GradientButton
                   text={
