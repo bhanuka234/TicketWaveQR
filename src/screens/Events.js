@@ -14,7 +14,7 @@ import getToken from '../api/getToken';
 import EventsApi from '../api/EventsApi';
 import GradientBackground from '../components/GradientBackground';
 import GradientButton from '../components/GradientButton';
-import CustomAlert from "../components/CustomAlert";
+import CustomAlert from '../components/CustomAlert';
 import { RFValue } from 'react-native-responsive-fontsize';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
