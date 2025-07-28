@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
   BackHandler,
   TouchableOpacity,
+  Dimensions,
 } from 'react-native';
 import getToken from '../api/getToken';
 import EventsApi from '../api/EventsApi';
@@ -17,6 +18,8 @@ import GradientButton from '../components/GradientButton';
 import CustomAlert from '../components/CustomAlert';
 import { RFValue } from 'react-native-responsive-fontsize';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const { width, height } = Dimensions.get('window');
 
 class Events extends Component {
   constructor(props) {
@@ -31,7 +34,7 @@ class Events extends Component {
   componentDidMount() {
     this.backHandler = BackHandler.addEventListener(
       'hardwareBackPress',
-      () => true, 
+      () => true,
     );
 
     getToken()
@@ -96,7 +99,6 @@ class Events extends Component {
               <TouchableOpacity onPress={this.confirmLogout} style={styles.logoutBtn}>
                 <Text style={styles.logoutText}>Logout</Text>
               </TouchableOpacity>
-              
             </View>
 
             <View style={styles.container}>
@@ -155,18 +157,18 @@ class Events extends Component {
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    paddingHorizontal: 20,
+    paddingHorizontal: width * 0.05,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginLeft: -50,
-    marginRight: -20,
-    paddingRight: 20,
+    marginLeft: height * -0.05,
+    marginRight: height * -0.02,
+    paddingRight: width * 0.02,
   },
   set: {
-    paddingTop: 30,
+    paddingTop: width * 0.03,
   },
   backContent: {
     flexDirection: 'row',
@@ -175,30 +177,30 @@ const styles = StyleSheet.create({
   backText: {
     fontSize: RFValue(25),
     color: '#FF71D2',
-    marginLeft: 50,
-    marginTop: 30,
+    marginLeft: height * 0.05,
+    marginTop: height * 0.03,
     fontWeight: '500',
   },
   logoutBtn: {
-    paddingHorizontal: 15,
-    paddingVertical: 8,
+    paddingHorizontal: width * 0.015,
+    paddingVertical: width * 0.01,
     borderRadius: 10,
   },
   logoutText: {
     fontSize: RFValue(15),
     color: '#FF71D2',
     fontWeight: '600',
-    marginTop: 30,
+    marginTop: height * 0.03,
   },
   container: {
     flex: 1,
-    marginTop: 20,
+    marginTop: height * 0.02,
   },
   card: {
     backgroundColor: '#222',
     borderRadius: 10,
-    padding: 15,
-    marginBottom: 15,
+    padding: width * 0.05,
+    marginBottom: height * 0.015,
     flexDirection: 'row',
     alignItems: 'center',
   },
@@ -206,7 +208,7 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
     fontSize: RFValue(14),
-    marginRight: 8,
+    marginRight: height * 0.01,
   },
   titleText: {
     flex: 1,
@@ -214,30 +216,28 @@ const styles = StyleSheet.create({
     fontSize: RFValue(14),
   },
   viewButton: {
-    paddingVertical: 6,
-    paddingHorizontal: 15,
+    paddingVertical: width * 0.015,
+    paddingHorizontal: width * 0.03,
     borderRadius: 10,
     height: 40,
     justifyContent: 'center',
     alignItems: 'center',
-    marginLeft: 10,
+    marginLeft: height * 0.01,
   },
   spinner: {
-    marginTop: 100,
+    marginTop: height * 0.1,
   },
   emptyContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 50,
+    paddingVertical: width * 0.05,
   },
-
   emptyText: {
     fontSize: RFValue(16),
     color: '#ccc',
     textAlign: 'center',
   },
-  
 });
 
 export default Events;
