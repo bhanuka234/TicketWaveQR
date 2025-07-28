@@ -15,6 +15,7 @@ import EventsApi from '../api/EventsApi';
 import GradientBackground from '../components/GradientBackground';
 import GradientButton from '../components/GradientButton';
 import CustomAlert from "../components/CustomAlert";
+import { RFValue } from 'react-native-responsive-fontsize';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 class Events extends Component {
@@ -30,7 +31,7 @@ class Events extends Component {
   componentDidMount() {
     this.backHandler = BackHandler.addEventListener(
       'hardwareBackPress',
-      () => true, // disable back action
+      () => true, 
     );
 
     getToken()
@@ -163,7 +164,6 @@ const styles = StyleSheet.create({
     marginLeft: -50,
     marginRight: -20,
     paddingRight: 20,
-
   },
   set: {
     paddingTop: 30,
@@ -173,7 +173,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   backText: {
-    fontSize: 25,
+    fontSize: RFValue(25),
     color: '#FF71D2',
     marginLeft: 50,
     marginTop: 30,
@@ -185,7 +185,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   logoutText: {
-    fontSize: 20,
+    fontSize: RFValue(15),
     color: '#FF71D2',
     fontWeight: '600',
     marginTop: 30,
@@ -205,13 +205,13 @@ const styles = StyleSheet.create({
   indexText: {
     color: '#fff',
     fontWeight: 'bold',
-    fontSize: 16,
+    fontSize: RFValue(14),
     marginRight: 8,
   },
   titleText: {
     flex: 1,
     color: '#fff',
-    fontSize: 16,
+    fontSize: RFValue(14),
   },
   viewButton: {
     paddingVertical: 6,
@@ -233,7 +233,7 @@ const styles = StyleSheet.create({
   },
 
   emptyText: {
-    fontSize: 18,
+    fontSize: RFValue(16),
     color: '#ccc',
     textAlign: 'center',
   },

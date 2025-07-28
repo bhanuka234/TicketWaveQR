@@ -2,6 +2,7 @@ import React from 'react';
 import {TouchableOpacity, Text, StyleSheet} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import PropTypes from 'prop-types';
+import { RFValue } from 'react-native-responsive-fontsize';
 
 const GradientButton = ({onPress, text, style, textStyle}) => {
   return (
@@ -33,7 +34,7 @@ const styles = StyleSheet.create({
   },
   text: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: RFValue(13),
     fontWeight: '600',
   },
 });

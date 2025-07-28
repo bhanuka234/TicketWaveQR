@@ -8,15 +8,12 @@ import {
   KeyboardAvoidingView,
   Platform,
   SafeAreaView,
-  Dimensions,
 } from 'react-native';
 import PropTypes from 'prop-types';
 import getToken from '../api/getToken';
 import checkLogin from '../api/checkLogin';
 import GradientBackground from '../components/GradientBackground';
 import {RFValue} from 'react-native-responsive-fontsize';
-
-// const { width, height } = Dimensions.get('window');
 
 export default class AuthLoadingScreen extends Component {
   constructor(props) {

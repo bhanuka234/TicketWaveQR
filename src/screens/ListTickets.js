@@ -1,13 +1,16 @@
-import React, { Component } from 'react';
+import React, {Component} from 'react';
 import {
   View,
   Text,
   StyleSheet,
   Image,
   StatusBar,
-  SafeAreaView, 
+  SafeAreaView,
   TouchableOpacity,
   Alert,
+  ScrollView,
+  PermissionsAndroid,
+  Platform,
 } from 'react-native';
 import GradientBackground from '../components/GradientBackground';
 import GradientButton from '../components/GradientButton';
@@ -16,93 +19,92 @@ import Tickets_by_events from '../api/Tickets_by_events';
 import EventDetails from '../api/EventDetails';
 import getToken from '../api/getToken';
 import RNHTMLtoPDF from 'react-native-html-to-pdf';
-import { ScrollView } from 'react-native';
-import { PermissionsAndroid,Platform } from 'react-native';
-
-
+import { RFValue } from 'react-native-responsive-fontsize';
 
 class ListTickets extends Component {
   constructor(props) {
     super(props);
-    const { eid } = props.route.params;
+    const {eid} = props.route.params;
     this.state = {
-      eid: parseInt(eid),       // Set eid directly from route params
+      eid: parseInt(eid), // Set eid directly from route params
       totalTickets: 0,
       soldTickets: 0,
       usedTickets: 0,
       remainingTickets: 0,
       tickets: [],
-      eventTime: '', 
-
+      eventTime: '',
     };
   }
 
-  
-async componentDidMount() {
-  try {
-    const token = await getToken(); 
-
-    const [eventData, eventInfo] = await Promise.all([
-      Tickets_by_events(token, this.state.eid),
-      EventDetails(token[0], this.state.eid), // <-- pass only base URL
-    ]);
-
-    if (eventData) {
-      this.setState({
-        totalTickets: eventData.total_tickets || 0,
-        usedTickets: eventData.tickets_checked || 0,
-        remainingTickets: eventData.tickets_available || 0,
-        soldTickets:
-          (eventData.tickets_checked || 0) +
-          (eventData.tickets_available || 0),
-        tickets: eventData.tickets || [],
-        eventTime: eventInfo.event_time || '', // now safely accessing parsed time
-      });
+  async componentDidMount() {
+    try {
+      const token = await getToken();
+      const [eventData, eventInfo] = await Promise.all([
+        Tickets_by_events(token, this.state.eid),
+        EventDetails(token[0], this.state.eid), // <-- pass only base URL
+      ]);
+      if (eventData) {
+        this.setState({
+          totalTickets: eventData.total_tickets || 0,
+          usedTickets: eventData.tickets_checked || 0,
+          remainingTickets: eventData.tickets_available || 0,
+          soldTickets:
+            (eventData.tickets_checked || 0) +
+            (eventData.tickets_available || 0),
+          tickets: eventData.tickets || [],
+          eventTime: eventInfo.event_time || '', // now safely accessing parsed time
+        });
+      }
+    } catch (error) {
+      console.error('Failed to fetch ticket/event data:', error);
     }
-  } catch (error) {
-    console.error('Failed to fetch ticket/event data:', error);
   }
-}
-
-
 
   handleBack = () => {
     this.props.navigation.goBack();
   };
-async requestStoragePermission() {
-  if (Platform.OS === 'android') {
-    try {
-      const granted = await PermissionsAndroid.requestMultiple([
-        PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
-        PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
-      ]);
+  async requestStoragePermission() {
+    if (Platform.OS === 'android') {
+      try {
+        const granted = await PermissionsAndroid.requestMultiple([
+          PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
+          PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+        ]);
 
-      const readGranted = granted['android.permission.READ_EXTERNAL_STORAGE'] === PermissionsAndroid.RESULTS.GRANTED;
-      const writeGranted = granted['android.permission.WRITE_EXTERNAL_STORAGE'] === PermissionsAndroid.RESULTS.GRANTED;
+        const readGranted =
+          granted['android.permission.READ_EXTERNAL_STORAGE'] ===
+          PermissionsAndroid.RESULTS.GRANTED;
+        const writeGranted =
+          granted['android.permission.WRITE_EXTERNAL_STORAGE'] ===
+          PermissionsAndroid.RESULTS.GRANTED;
 
-      if (readGranted && writeGranted) {
-        console.log('Storage permissions granted');
-        return true;
-      } else {
-        console.warn('Storage permissions denied');
+        if (readGranted && writeGranted) {
+          console.log('Storage permissions granted');
+          return true;
+        } else {
+          console.warn('Storage permissions denied');
+          return false;
+        }
+      } catch (err) {
+        console.warn(err);
         return false;
       }
-    } catch (err) {
-      console.warn(err);
-      return false;
     }
+    return true; // iOS doesn't require these permissions
   }
-  return true; // iOS doesn't require these permissions
-}
   generatePdf = async () => {
-const permissionGranted = await this.requestStoragePermission();
-if (!permissionGranted) {
-  Alert.alert('Permission Denied', 'Storage permission is required to save the PDF.');
-  return;
-}
+    const permissionGranted = await this.requestStoragePermission();
+    if (!permissionGranted) {
+      Alert.alert(
+        'Permission Denied',
+        'Storage permission is required to save the PDF.',
+      );
+      return;
+    }
 
-    const { title } = this.props.route.params;
-    const { soldTickets, usedTickets, remainingTickets, tickets,eventTime } = this.state;
+    const {title} = this.props.route.params;
+    const {soldTickets, usedTickets, remainingTickets, tickets, eventTime} =
+      this.state;
 
     const ticketRows = tickets
       .map((ticket, index) => {
@@ -114,9 +116,13 @@ if (!permissionGranted) {
         return `
         <tr style="${rowStyle}">
           <td style="border: 1px solid #999; padding: 6px;">${index + 1}</td>
-          <td style="border: 1px solid #999; padding: 6px;">${ticket.customer_name}</td>
+          <td style="border: 1px solid #999; padding: 6px;">${
+            ticket.customer_name
+          }</td>
           <td style="border: 1px solid #999; padding: 6px;">${ticket.email}</td>
-          <td style="border: 1px solid #999; padding: 6px;">${ticket.qr_code}</td>
+          <td style="border: 1px solid #999; padding: 6px;">${
+            ticket.qr_code
+          }</td>
           <td style="border: 1px solid #999; padding: 6px; font-weight: bold;">
             ${ticket.ticket_status || 'Not Checked'}
           </td>
@@ -159,7 +165,6 @@ if (!permissionGranted) {
         directory: 'Download',
       };
 
-
       const file = await RNHTMLtoPDF.convert(options);
       Alert.alert('Success', `PDF saved to:\n${file.filePath}`);
       console.log('PDF generated at:', file.filePath);
@@ -169,10 +174,8 @@ if (!permissionGranted) {
     }
   };
 
-  
-
   render() {
-    const { title } = this.props.route.params;
+    const {title} = this.props.route.params;
 
     return (
       <>
@@ -183,112 +186,117 @@ if (!permissionGranted) {
         />
         <GradientBackground>
           <SafeAreaView style={styles.safe}>
-            <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-            <View style={styles.header}>
-              <TouchableOpacity onPress={this.handleBack}>
-                <View style={styles.backContent}>
-                  <Image
-                    source={require('../assets/back.png')}
-                    style={styles.backIcon}
-                    resizeMode="contain"
-                  />
-                  <Text style={styles.backText}>Events</Text>
-                  
-                </View>
-              </TouchableOpacity>
-              
-            </View>
+            <ScrollView contentContainerStyle={{flexGrow: 1}}>
+              <View style={styles.header}>
+                <TouchableOpacity onPress={this.handleBack}>
+                  <View style={styles.backContent}>
+                    <Image
+                      source={require('../assets/back.png')}
+                      style={styles.backIcon}
+                      resizeMode="contain"
+                    />
+                    <Text style={styles.backText}>Events</Text>
+                  </View>
+                </TouchableOpacity>
+              </View>
 
-            <Text style={styles.title}>{title}</Text>
-            <View style={styles.spacer} />
+              <Text style={styles.title}>{title}</Text>
+              <View style={styles.spacer} />
 
-            {/* Event details section */}
-            <View style={styles.detailsBox}>
-              <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}>Sold Tickets</Text>
-                <Text style={styles.detailValue}>{this.state.soldTickets}</Text>
-              </View>
-              <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}>Used Tickets</Text>
-                <Text style={styles.detailValue}>{this.state.usedTickets}</Text>
-              </View>
-              <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}>Remaining Tickets</Text>
-                <Text style={styles.detailValue}>{this.state.remainingTickets}</Text>
-              </View>
-              
-              <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}></Text>
+              {/* Event details section */}
+              <View style={styles.detailsBox}>
+                <View style={styles.detailRow}>
+                  <Text style={styles.detailLabel}>Sold Tickets</Text>
+                  <Text style={styles.detailValue}>
+                    {this.state.soldTickets}
+                  </Text>
+                </View>
+                <View style={styles.detailRow}>
+                  <Text style={styles.detailLabel}>Used Tickets</Text>
+                  <Text style={styles.detailValue}>
+                    {this.state.usedTickets}
+                  </Text>
+                </View>
+                <View style={styles.detailRow}>
+                  <Text style={styles.detailLabel}>Remaining Tickets</Text>
+                  <Text style={styles.detailValue}>
+                    {this.state.remainingTickets}
+                  </Text>
+                </View>
 
-              </View>
-              <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}>Time</Text>
-                <View style={styles.dateRow}>
-                  <Text style={styles.detailValue}>{this.state.eventTime}</Text>
-                  <MaterialCommunityIcons
-                    name="calendar-month"
-                    size={20}
-                    color="#FF71D2"
-                    style={styles.iconMargin}
+                <View style={styles.detailRow}>
+                  <Text style={styles.detailLabel}></Text>
+                </View>
+                <View style={styles.detailRow}>
+                  <Text style={styles.detailLabel}>Time</Text>
+                  <View style={styles.dateRow}>
+                    <Text style={styles.detailValue}>
+                      {this.state.eventTime}
+                    </Text>
+                    <MaterialCommunityIcons
+                      name="calendar-month"
+                      size={20}
+                      color="#FF71D2"
+                      style={styles.iconMargin}
+                    />
+                  </View>
+                </View>
+
+                <View style={styles.pdfbutton}>
+                  <GradientButton
+                    text={
+                      <View style={styles.pdfContent}>
+                        <MaterialCommunityIcons
+                          name="file-pdf-box"
+                          size={26}
+                          color="#fff"
+                          style={styles.iconMargin}
+                        />
+                        <Text style={styles.pdfText}>Generate PDF</Text>
+                      </View>
+                    }
+                    onPress={this.generatePdf}
                   />
                 </View>
               </View>
-              
-              <View style={styles.pdfbutton}>
-                <GradientButton
-                  text={
-                    <View style={styles.pdfContent}>
-                      <MaterialCommunityIcons
-                        name="file-pdf-box"
-                        size={26}
-                        color="#fff"
-                        style={styles.iconMargin}
-                      />
-                      <Text style={styles.pdfText}>Generate PDF</Text>
-                    </View>
-                  }
-                  onPress={this.generatePdf}
-                />
-              </View>
-            </View>
-            <GradientButton
-              text={
-                <View style={styles.scanContent}>
-                  <Image
-                    source={require('../assets/oHistory.png')}
-                    style={styles.historyIcon}
-                  />
-                  <Text style={styles.scanText}>History</Text>
-                </View>
-              }
-              style={styles.historyBtn}
-              onPress={() =>
-                this.props.navigation.navigate('History', {
-                  eid: this.state.eid,
-                })
-              }
-            />
+              <GradientButton
+                text={
+                  <View style={styles.scanContent}>
+                    <Image
+                      source={require('../assets/oHistory.png')}
+                      style={styles.historyIcon}
+                    />
+                    <Text style={styles.scanText}>History</Text>
+                  </View>
+                }
+                style={styles.historyBtn}
+                onPress={() =>
+                  this.props.navigation.navigate('History', {
+                    eid: this.state.eid,
+                  })
+                }
+              />
 
-            {/* Scan Button */}
-            <GradientButton
-              text={
-                <View style={styles.scanContent}>
-                  <Image
-                    source={require('../assets/scannericon.png')}
-                    style={styles.scanIcon}
-                  />
-                  <Text style={styles.scanText}>Scan</Text>
-                </View>
-              }
-              onPress={() =>
-                this.props.navigation.navigate('ScanBarcode', {
-                  eid: this.state.eid,
-                })
-              }
-              style={styles.scanBtn}
-              textStyle={styles.btnTextWrap}
-            />
-           </ScrollView>
+              {/* Scan Button */}
+              <GradientButton
+                text={
+                  <View style={styles.scanContent}>
+                    <Image
+                      source={require('../assets/scannericon.png')}
+                      style={styles.scanIcon}
+                    />
+                    <Text style={styles.scanText}>Scan</Text>
+                  </View>
+                }
+                onPress={() =>
+                  this.props.navigation.navigate('ScanBarcode', {
+                    eid: this.state.eid,
+                  })
+                }
+                style={styles.scanBtn}
+                textStyle={styles.btnTextWrap}
+              />
+            </ScrollView>
           </SafeAreaView>
         </GradientBackground>
       </>
@@ -298,9 +306,9 @@ if (!permissionGranted) {
 
 const styles = StyleSheet.create({
   safe: {
-  flex: 1,
-  paddingHorizontal: 20,
-},
+    flex: 1,
+    paddingHorizontal: 20,
+  },
 
   header: {
     flexDirection: 'row',
@@ -309,7 +317,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   title: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     fontWeight: 'bold',
     color: '#fff',
     textAlign: 'left',
@@ -321,7 +329,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   backText: {
-    fontSize: 25,
+    fontSize: RFValue(18),
     color: '#FF71D2',
     marginLeft: -30,
     fontWeight: '500',
@@ -343,12 +351,12 @@ const styles = StyleSheet.create({
     marginVertical: 5,
   },
   detailLabel: {
-    fontSize: 16,
+    fontSize: RFValue(13),
     color: '#fff',
     fontWeight: '500',
   },
   detailValue: {
-    fontSize: 16,
+    fontSize: RFValue(13),
     color: '#fff',
   },
   dateRow: {
@@ -365,7 +373,7 @@ const styles = StyleSheet.create({
   },
   pdfText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: RFValue(15),
     fontWeight: '600',
     marginLeft: 8,
   },
@@ -374,29 +382,28 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   scanBtn: {
-  paddingVertical: 12,
-  borderRadius: 10,
-  alignSelf: 'center',
-  width: '80%',
-  minHeight: 60, // optional: reduce from 70 if it's too tall
-  marginBottom: 100,
-  marginTop: 30,
-},
-historyBtn: {
-  paddingVertical: 12,
-  borderRadius: 10,
-  alignSelf: 'center',
-  width: '80%',
-  minHeight: 60,
-  marginBottom: 20,
-},
+    paddingVertical: 12,
+    borderRadius: 10,
+    alignSelf: 'center',
+    width: '80%',
+    minHeight: 60, // optional: reduce from 70 if it's too tall
+    marginBottom: 100,
+    marginTop: 30,
+  },
+  historyBtn: {
+    paddingVertical: 12,
+    borderRadius: 10,
+    alignSelf: 'center',
+    width: '80%',
+    minHeight: 60,
+    marginBottom: 20,
+  },
 
   scanContent: {
-  flexDirection: 'row',
-  alignItems: 'center',
-  justifyContent: 'center',
-},
-
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   scanIcon: {
     width: 40,
     height: 40,
@@ -409,7 +416,7 @@ historyBtn: {
     marginRight: 10,
   },
   scanText: {
-    fontSize: 25,
+    fontSize: RFValue(15),
     fontWeight: '600',
     color: '#fff',
   },

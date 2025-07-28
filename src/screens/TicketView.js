@@ -13,6 +13,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import GradientBackground from "../components/GradientBackground";
 import BottomNavBar from "../components/BottomNavBar";
 import TicketDetail from "../api/TicketDetails";
+import { RFValue } from "react-native-responsive-fontsize";
 
 class TicketView extends Component {
   state = {
@@ -127,7 +128,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   backText: {
-    fontSize: 25,
+    fontSize: RFValue(20),
     color: "#FF71D2",
     fontWeight: "500",
     marginLeft: -30,
@@ -153,12 +154,12 @@ const styles = StyleSheet.create({
   },
   ticketText: {
     color: "#FFFFFF",
-    fontSize: 16,
+    fontSize: RFValue(13),
   },
   ticketDate: {
     color: "#CCCCCC",
-    fontSize: 14,
-    // marginLeft: 150,
+    fontSize: RFValue(10),
+    marginLeft: 100,
   },
   line: {
     borderBottomWidth: 1,
@@ -174,24 +175,17 @@ const styles = StyleSheet.create({
   },
   infoLabel: {
     color: "#AAAAAA",
-    fontSize: 14,
+    fontSize: RFValue(13),
   },
   infoValueApproved: {
     color: "green",
-    fontSize: 16,
+    fontSize: RFValue(13),
     fontWeight: "500",
   },
   infoValueGold: {
     color: "#FFD700",
-    fontSize: 16,
+    fontSize: RFValue(13),
     fontWeight: "500",
-  },
-  showQr: {
-    color: "#FF71D2",
-    fontWeight: "600",
-    fontSize: 18,
-    marginTop: 15,
-    textAlign: "center",
   },
 });
 

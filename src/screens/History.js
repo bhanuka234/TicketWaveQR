@@ -8,13 +8,16 @@ import {
   Image,
   ActivityIndicator,
   FlatList,
+  Dimensions
 } from 'react-native';
 import GradientBackground from '../components/GradientBackground';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import BottomNavBar from '../components/BottomNavBar';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Tickets_by_events from '../api/Tickets_by_events';
+import { RFValue } from 'react-native-responsive-fontsize';
 
+const { width, height } = Dimensions.get('window');
 
 class History extends Component {
   state = {
@@ -22,16 +25,20 @@ class History extends Component {
     loading: true,
   };
 
-  async componentDidMount() {
-    let eid = this.props.route?.params?.eid;
-    if (!eid) {
-      const storedEid = await AsyncStorage.getItem('@selectedEid');
-      if (storedEid) {
-        eid = parseInt(storedEid);
-      }
-    }
-    this.fetchScannedTickets(eid);
+  componentDidMount(){
+    this.initializeData();
   }
+
+  initializeData = async () => {
+  let eid = this.props.route?.params?.eid;
+  if (!eid) {
+    const storedEid = await AsyncStorage.getItem('@selectedEid');
+    if (storedEid) {
+      eid = parseInt(storedEid);
+    }
+  }
+  this.fetchScannedTickets(eid);
+};
 
   fetchScannedTickets = async (eid = null) => {
     try {
@@ -115,7 +122,7 @@ class History extends Component {
             {/* Ticket cards list */}
             {this.state.loading ? (
               <ActivityIndicator
-                size="70"
+                size="90"
                 color="#ffffff"
                 style={styles.spinner}
               />
@@ -144,23 +151,23 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 200,
-    marginTop: 20,
-    marginBottom: 30,
+    marginRight: height * 0.2,
+    marginTop: height * 0.02,
+    marginBottom: height * 0.03,
   },
   backContent: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   backText: {
-    fontSize: 25,
+    fontSize: RFValue(20),
     color: '#FF71D2',
-    marginLeft: -30,
+    marginLeft: height * -0.03,
     fontWeight: '500',
   },
   cardStyle: {
     backgroundColor: '#2c2c2c',
-    marginBottom: 15,
+    marginBottom: height * 0.015,
     padding: 15,
     borderRadius: 10,
     flexDirection: 'column',
@@ -170,41 +177,37 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     gap: 8,
   },
-
   qrRow: {
     flexDirection: 'row',
     alignItems: 'center',
     flexWrap: 'nowrap',
     overflow: 'hidden',
   },
-
   ticketTitle: {
-    fontSize: 16,
+    fontSize: RFValue(13),
     fontWeight: '600',
     color: '#fff',
-    marginTop: 5,
-    marginLeft: 10,
+    marginTop: height * 0.005,
+    marginLeft: height * 0.01,
   },
-
   ticketLabel: {
     color: '#fff',
-    fontSize: 14,
-    marginLeft: 10,
+    fontSize: RFValue(13),
+    marginLeft: height * 0.01,
   },
-
   qrValue: {
     flex: 1,
     color: '#fff',
-    fontSize: 14,
-    marginLeft: 5,
+    fontSize: RFValue(14),
+    marginLeft: height * 0.005,
     flexWrap: 'wrap',
   },
   qrCode: {
-    width: 30,
-    height: 30,
+    width: RFValue(30),
+    height: RFValue(30),
   },
   ticketDetails: {
-    fontSize: 15,
+    fontSize: RFValue(15),
     color: '#fff',
     flex: 1,
     // marginLeft: 10,
@@ -216,21 +219,21 @@ const styles = StyleSheet.create({
   dateRow: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
-    marginTop: 5,
+    marginTop: height * 0.005,
   },
   ticketDetails2: {
-    fontSize: 12,
+    fontSize: RFValue(10),
     color: 'grey',
     textAlign: 'right',
   },
   spinner: {
-    marginTop: 100,
+    marginTop: height * 0.1,
   },
   showTicketText: {
     color: '#FF71D2',
     fontWeight: '600',
-    fontSize: 14,
-    marginTop: 10,
+    fontSize: RFValue(10),
+    marginTop: height * 0.01,
     textAlign: 'center',
   },
 });
