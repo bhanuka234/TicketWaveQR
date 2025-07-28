@@ -5,18 +5,19 @@ import {
   StyleSheet,
   Image,
   StatusBar,
-  SafeAreaView,
+  SafeAreaView, 
   TouchableOpacity,
   Alert,
 } from 'react-native';
 import GradientBackground from '../components/GradientBackground';
 import GradientButton from '../components/GradientButton';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons'; // <-- MaterialCommunityIcons import
-import Entypo from 'react-native-vector-icons/Entypo'; // <-- Entypo import
 import Tickets_by_events from '../api/Tickets_by_events';
 import EventDetails from '../api/EventDetails';
 import getToken from '../api/getToken';
 import RNHTMLtoPDF from 'react-native-html-to-pdf';
+import { ScrollView } from 'react-native';
+import { PermissionsAndroid,Platform } from 'react-native';
 
 
 
@@ -36,26 +37,7 @@ class ListTickets extends Component {
     };
   }
 
-  // async componentDidMount() {
-  //   try {
-  //     const token = await getToken();
-  //     const eventData = await Tickets_by_events(token, this.state.eid);
-
-  //     if (eventData) {
-  //       this.setState({
-  //         totalTickets: eventData.total_tickets || 0,
-  //         usedTickets: eventData.tickets_checked || 0,
-  //         remainingTickets: eventData.tickets_available || 0,
-  //         soldTickets:
-  //           (eventData.tickets_checked || 0) +
-  //           (eventData.tickets_available || 0),
-  //         tickets: eventData.tickets || [], // <-- store tickets
-  //       });
-  //     }
-  //   } catch (error) {
-  //     console.error('Failed to fetch event ticket data:', error);
-  //   }
-  // }
+  
 async componentDidMount() {
   try {
     const token = await getToken(); 
@@ -87,7 +69,38 @@ async componentDidMount() {
   handleBack = () => {
     this.props.navigation.goBack();
   };
+async requestStoragePermission() {
+  if (Platform.OS === 'android') {
+    try {
+      const granted = await PermissionsAndroid.requestMultiple([
+        PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
+        PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+      ]);
+
+      const readGranted = granted['android.permission.READ_EXTERNAL_STORAGE'] === PermissionsAndroid.RESULTS.GRANTED;
+      const writeGranted = granted['android.permission.WRITE_EXTERNAL_STORAGE'] === PermissionsAndroid.RESULTS.GRANTED;
+
+      if (readGranted && writeGranted) {
+        console.log('Storage permissions granted');
+        return true;
+      } else {
+        console.warn('Storage permissions denied');
+        return false;
+      }
+    } catch (err) {
+      console.warn(err);
+      return false;
+    }
+  }
+  return true; // iOS doesn't require these permissions
+}
   generatePdf = async () => {
+const permissionGranted = await this.requestStoragePermission();
+if (!permissionGranted) {
+  Alert.alert('Permission Denied', 'Storage permission is required to save the PDF.');
+  return;
+}
+
     const { title } = this.props.route.params;
     const { soldTickets, usedTickets, remainingTickets, tickets,eventTime } = this.state;
 
@@ -146,6 +159,7 @@ async componentDidMount() {
         directory: 'Download',
       };
 
+
       const file = await RNHTMLtoPDF.convert(options);
       Alert.alert('Success', `PDF saved to:\n${file.filePath}`);
       console.log('PDF generated at:', file.filePath);
@@ -155,9 +169,7 @@ async componentDidMount() {
     }
   };
 
-  goToSettings = () => {
-    this.props.navigation.navigate('Setting');
-  };
+  
 
   render() {
     const { title } = this.props.route.params;
@@ -171,6 +183,7 @@ async componentDidMount() {
         />
         <GradientBackground>
           <SafeAreaView style={styles.safe}>
+            <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
             <View style={styles.header}>
               <TouchableOpacity onPress={this.handleBack}>
                 <View style={styles.backContent}>
@@ -183,9 +196,7 @@ async componentDidMount() {
                   
                 </View>
               </TouchableOpacity>
-              <TouchableOpacity onPress={this.goToSettings}>
-                    <Entypo name="cog" size={30} color="#fff" />
-                  </TouchableOpacity>
+              
             </View>
 
             <Text style={styles.title}>{title}</Text>
@@ -277,6 +288,7 @@ async componentDidMount() {
               style={styles.scanBtn}
               textStyle={styles.btnTextWrap}
             />
+           </ScrollView>
           </SafeAreaView>
         </GradientBackground>
       </>
@@ -286,9 +298,10 @@ async componentDidMount() {
 
 const styles = StyleSheet.create({
   safe: {
-    flex: 1,
-    paddingHorizontal: 20,
-  },
+  flex: 1,
+  paddingHorizontal: 20,
+},
+
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -361,28 +374,29 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   scanBtn: {
-    paddingHorizontal: 40,
-    paddingVertical: 12,
-    borderRadius: 10,
-    alignSelf: 'center',
-    minWidth: 200,
-    minHeight: 70,
-    marginBottom: 150,
-    marginTop: 30,
-  },
-  historyBtn: {
-    paddingHorizontal: 40,
-    paddingVertical: 12,
-    borderRadius: 10,
-    alignSelf: 'center',
-    minWidth: 200,
-    minHeight: 70,
-    marginBottom: 20,
-  },
+  paddingVertical: 12,
+  borderRadius: 10,
+  alignSelf: 'center',
+  width: '80%',
+  minHeight: 60, // optional: reduce from 70 if it's too tall
+  marginBottom: 100,
+  marginTop: 30,
+},
+historyBtn: {
+  paddingVertical: 12,
+  borderRadius: 10,
+  alignSelf: 'center',
+  width: '80%',
+  minHeight: 60,
+  marginBottom: 20,
+},
+
   scanContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'center',
+},
+
   scanIcon: {
     width: 40,
     height: 40,

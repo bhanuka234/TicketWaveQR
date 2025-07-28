@@ -1,23 +1,28 @@
 import React from 'react';
-import {TouchableOpacity, View, Text, StyleSheet, Image} from 'react-native';
-import DropShadow from 'react-native-drop-shadow';
-import {useNavigation, useRoute} from '@react-navigation/native';
+import { TouchableOpacity, View, Text, StyleSheet, Image } from 'react-native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const BottomNavBar = () => {
+
   const navigation = useNavigation();
   const route = useRoute();
   const currentRoute = route.name;
   const isActive = screen => currentRoute === screen;
 
   const handleHistoryPress = async () => {
-    const eid = await AsyncStorage.getItem('@selectedEid');
-    if (eid) {
-      navigation.navigate('History', {eid: parseInt(eid)});
-    } else {
-      alert('Please select an event first.');
+    try {
+      const eid = await AsyncStorage.getItem('@selectedEid');
+      if (eid) {
+        navigation.navigate('History', { eid: parseInt(eid) });
+      } else {
+        alert('Please select an event first.');
+      }
+    } catch (e) {
+      alert('Failed to load event. Please try again.');
     }
   };
+
 
   return (
     <View style={styles.bottomNavbarContainer}>
@@ -28,14 +33,14 @@ const BottomNavBar = () => {
             source={require('../assets/history.png')}
             style={[
               styles.historyButton,
-              {tintColor: isActive('History') ? '#FF71D2' : 'white'},
+              { tintColor: isActive('History') ? '#FF71D2' : 'white' },
             ]}
             resizeMode="contain"
           />
           <Text
             style={[
               styles.navText,
-              {color: isActive('History') ? '#FF71D2' : 'white'},
+              { color: isActive('History') ? '#FF71D2' : 'white' },
             ]}>
             History
           </Text>
@@ -44,17 +49,26 @@ const BottomNavBar = () => {
 
       {/* Scan icon */}
       {/* <DropShadow style={styles.shadowProp}> */}
-        <View style={styles.bottomNavbarScanner}>
-          <TouchableOpacity
-            style={styles.scanButtonContainer}
-            onPress={() => navigation.navigate('ScanBarcode')}>
-            <Image
-              source={require('../assets/scanNav.png')}
-              style={styles.scanButton}
-              resizeMode="contain"
-            />
-          </TouchableOpacity>
-        </View>
+      <View style={styles.bottomNavbarScanner}>
+        <TouchableOpacity
+  style={styles.scanButtonContainer}
+  onPress={async () => {
+    const eid = await AsyncStorage.getItem('@selectedEid');
+    if (eid) {
+      navigation.push('ScanBarcode', { eid: parseInt(eid) });
+    } else {
+      alert('Please select an event first.');
+    }
+  }}
+>
+
+          <Image
+            source={require('../assets/scanNav.png')}
+            style={styles.scanButton}
+            resizeMode="contain"
+          />
+        </TouchableOpacity>
+      </View>
       {/* </DropShadow> */}
 
       {/* Events */}
@@ -64,13 +78,13 @@ const BottomNavBar = () => {
             source={require('../assets/event.png')}
             style={[
               styles.eventButton,
-              {tintColor: isActive('Events') ? '#FF71D2' : 'white'},
+              { tintColor: isActive('Events') ? '#FF71D2' : 'white' },
             ]}
           />
           <Text
             style={[
               styles.navText,
-              {color: isActive('Events') ? '#FF71D2' : 'white'},
+              { color: isActive('Events') ? '#FF71D2' : 'white' },
             ]}>
             Events
           </Text>

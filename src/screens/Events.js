@@ -8,18 +8,20 @@ import {
   SafeAreaView,
   ActivityIndicator,
   BackHandler,
-  TouchableOpacity
+  TouchableOpacity,
 } from 'react-native';
 import getToken from '../api/getToken';
 import EventsApi from '../api/EventsApi';
 import GradientBackground from '../components/GradientBackground';
 import GradientButton from '../components/GradientButton';
-import Icon from 'react-native-vector-icons/Entypo';
+import CustomAlert from "../components/CustomAlert";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 class Events extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      showLogoutAlert: false,
       data: [],
 
     };
@@ -51,12 +53,28 @@ class Events extends Component {
     }
   }
 
-  goToSettings = () => {
-    this.props.navigation.navigate('Setting');
+
+  confirmLogout = () => {
+    this.setState({ showLogoutAlert: true });
   };
-
-
-
+  hideLogoutAlert = () => {
+    this.setState({ showLogoutAlert: false });
+  };
+  logout = async () => {
+    try {
+      await AsyncStorage.multiSet([
+        ['@token', ''],
+        ['@isLoggedIn', '0'],
+      ]);
+      this.setState({showLogoutAlert: false});
+      this.props.navigation.reset({
+        index: 0,
+        routes: [{name: 'Login'}],
+      });
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
 
   render() {
     return (
@@ -74,9 +92,10 @@ class Events extends Component {
               </View>
 
               {/* Setting Icon at the end of the header */}
-              <TouchableOpacity onPress={this.goToSettings} style={styles.set}>
-                <Icon name="cog" size={26} color="#fff" />
+              <TouchableOpacity onPress={this.confirmLogout} style={styles.logoutBtn}>
+                <Text style={styles.logoutText}>Logout</Text>
               </TouchableOpacity>
+              
             </View>
 
             <View style={styles.container}>
@@ -115,7 +134,16 @@ class Events extends Component {
               )}
             </View>
           </SafeAreaView>
-
+          <CustomAlert
+            visible={this.state.showLogoutAlert}
+            title="Logout"
+            message="Are you sure you want to logout?"
+            onClose={this.hideLogoutAlert}
+            onConfirm={this.logout}
+            showCancel={true}
+            confirmText="Logout"
+            cancelText="Cancel"
+          />
 
         </GradientBackground>
       </>
@@ -135,10 +163,10 @@ const styles = StyleSheet.create({
     marginLeft: -50,
     marginRight: -20,
     paddingRight: 20,
-    
+
   },
   set: {
-    paddingTop:30,
+    paddingTop: 30,
   },
   backContent: {
     flexDirection: 'row',
@@ -209,6 +237,7 @@ const styles = StyleSheet.create({
     color: '#ccc',
     textAlign: 'center',
   },
+  
 });
 
 export default Events;
