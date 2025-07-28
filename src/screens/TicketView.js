@@ -138,7 +138,7 @@ class TicketView extends Component {
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    paddingHorizontal: 20,
+    paddingHorizontal: width * 0.01,
   },
   header: {
     flexDirection: 'row',
@@ -161,7 +161,7 @@ const styles = StyleSheet.create({
   ticketCard: {
     backgroundColor: '#2c2c2c',
     borderRadius: 10,
-    padding: 20,
+    padding: width * 0.05,
   },
   ticketRow: {
     flexDirection: 'row',

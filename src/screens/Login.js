@@ -1,13 +1,23 @@
 import React, {Component} from 'react';
-import {StyleSheet, View, Text, TextInput, Image} from 'react-native';
+import {
+  StyleSheet,
+  View,
+  Text,
+  TextInput,
+  Image,
+  StatusBar,
+  Dimensions,
+} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import GradientBackground from '../components/GradientBackground';
 import LoginApi from '../api/LoginApi';
-import {StatusBar} from 'react-native';
 import GradientButton from '../components/GradientButton';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import CustomAlert from '../components/CustomAlert';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import {RFValue} from 'react-native-responsive-fontsize';
+
+const {width, height} = Dimensions.get('window');
 
 class Login extends Component {
   constructor(props) {
@@ -196,20 +206,20 @@ const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
     justifyContent: 'center',
-    paddingHorizontal: 20,
+    paddingHorizontal: width * 0.05,
     // paddingBottom: 10,
   },
   logo: {
     width: 200,
     height: 200,
     alignSelf: 'center',
-    marginBottom: 20,
+    marginBottom: height * 0.03,
     resizeMode: 'contain',
   },
   formContainer: {
     backgroundColor: '#1e1e1e',
     borderRadius: 16,
-    padding: 25,
+    padding: width * 0.06,
     shadowColor: '#000',
     shadowOffset: {width: 0, height: 10},
     shadowOpacity: 0.25,
@@ -217,16 +227,16 @@ const styles = StyleSheet.create({
     elevation: 10,
   },
   title: {
-    fontSize: 22,
+    fontSize: RFValue(20),
     color: '#fff',
-    marginBottom: 20,
+    marginBottom: height * 0.03,
     fontWeight: 'bold',
     textAlign: 'left',
   },
   subTopic: {
-    fontSize: 16,
+    fontSize: RFValue(15),
     color: '#ccc',
-    marginBottom: 10,
+    marginBottom: height * 0.02,
     textAlign: 'left',
   },
   passwordContainer: {
@@ -234,26 +244,25 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#fff',
     borderRadius: 8,
-    marginBottom: 15,
-    paddingHorizontal: 10,
+    marginBottom: height * 0.015,
+    paddingHorizontal: width * 0.02,
   },
   passwordInput: {
     flex: 1,
     height: 50,
-    fontSize: 16,
+    fontSize: RFValue(14),
     color: '#000',
   },
   eyeIcon: {
-    paddingHorizontal: 10,
+    paddingHorizontal: width * 0.02,
   },
-
   input: {
     height: 50,
     borderRadius: 8,
     backgroundColor: '#fff',
-    marginBottom: 15,
-    paddingHorizontal: 15,
-    fontSize: 16,
+    marginBottom: height * 0.015,
+    paddingHorizontal: width * 0.015,
+    fontSize: RFValue(14),
     color: '#000',
   },
   btn: {
@@ -262,12 +271,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#5C00FF',
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 10,
-  },
-  btnText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
+    marginTop: height * 0.02,
   },
 });
 
