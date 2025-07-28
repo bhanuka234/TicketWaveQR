@@ -101,6 +101,6 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     color: '#ffffff',
-    fontSize: 20,
+    fontSize: RFValue(20),
   },
 });
