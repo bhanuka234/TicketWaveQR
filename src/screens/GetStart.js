@@ -1,7 +1,10 @@
 import React, {Component} from 'react';
-import {View, Text, StyleSheet, Image, TouchableOpacity} from 'react-native';
+import {View, Text, StyleSheet, Image, Dimensions} from 'react-native';
 import GradientBackground from '../components/GradientBackground';
 import GradientButton from '../components/GradientButton';
+import { RFValue } from 'react-native-responsive-fontsize';
+
+const { width, height } = Dimensions.get('window');
 
 class GetStart extends Component {
   render() {
@@ -12,15 +15,14 @@ class GetStart extends Component {
             source={require('../assets/scannericon.png')}
             style={styles.logo}
           />
-          <Text style={{textAlign: 'center', marginTop: 50, color: '#fff'}}>
+          <Text style={styles.firstText}>
             Explore powerful tools for hassle-free event ticket scanning -
             totally free!
           </Text>
           <GradientButton
             text="Let's Start  ➔"
             onPress={() => this.props.navigation.navigate('Events')}
-            style={{width: 150, height: 50, marginTop: 20}}
-            textStyle={{fontSize: 16}}
+            style={styles.gradientBtn}
           />
         </View>
       </GradientBackground>
@@ -33,28 +35,26 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 5,
+    padding: width * 0.05,
   },
-  btn: {
-    height: 40,
-    width: 120,
-    backgroundColor: '#e86c60',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 20,
-  },
-  btn_text: {
+  firstText:{
+    textAlign: 'center',
+    marginTop: height * 0.05,
     color: '#fff',
-    fontSize: 16,
-    borderRadius: 5,
+    fontSize: RFValue(13),
   },
   logo: {
-    width: 200,
-    height: 200,
+    width: width * 0.3,
+    height: height * 0.3,
     resizeMode: 'contain',
-    marginTop: 150,
-    marginBottom: 30,
+    marginTop: height * 0.1,
+    marginBottom: height * 0.03,
     alignSelf: 'center',
+  },
+  gradientBtn:{
+    width: width * 0.5,
+    height: height * 0.06,
+    marginTop: 20,
   },
 });
 
