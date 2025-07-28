@@ -60,11 +60,11 @@ class TicketView extends Component {
               <View style={styles.infoRow}>
                 <View style={styles.infoItem}>
                   <Text style={styles.infoLabel}>Status</Text>
-                  <Text style={styles.infoLabel}>Type</Text>
+                  {/* <Text style={styles.infoLabel}>Type</Text> */}
                 </View>
                 <View style={styles.infoItem}>
                   <Text style={styles.infoValueApproved}>Approved</Text>
-                  <Text style={styles.infoValueGold}>GOLD</Text>
+                  {/* <Text style={styles.infoValueGold}>GOLD</Text> */}
                 </View>
               </View>
             </View>
