@@ -31,7 +31,14 @@ const CustomAlert = ({
 
               <TouchableOpacity
                 style={[styles.button, styles.confirmButton]}
-                onPress={onConfirm || onClose}>
+                onPress={() =>{
+                  if(onConfirm){
+                    onConfirm();
+                  } else{
+                    onClose();
+                  }
+                }
+                }>
                 <Text style={styles.confirmButtonText}>{confirmText}</Text>
               </TouchableOpacity>
             </View>

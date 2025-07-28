@@ -1,25 +1,13 @@
 import React, {Component} from 'react';
-import {
-  StyleSheet,
-  View,
-  Text,
-  TextInput,
-  Image,
-  StatusBar,
-  SafeAreaView,
-  Dimensions,
-} from 'react-native';
+import {StyleSheet, View, Text, TextInput, Image} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import GradientBackground from '../components/GradientBackground';
 import LoginApi from '../api/LoginApi';
+import {StatusBar} from 'react-native';
 import GradientButton from '../components/GradientButton';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import CustomAlert from '../components/CustomAlert';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import {RFValue} from 'react-native-responsive-fontsize';
-import PropTypes from 'prop-types';
-
-const {width} = Dimensions.get('window');
 
 class Login extends Component {
   constructor(props) {
@@ -86,6 +74,17 @@ class Login extends Component {
 
     try {
       const resjson = await LoginApi(url, user, pass);
+
+      if (resjson.html) {
+        // Received HTML instead of JSON → trigger change password scenario
+        this.showAlert(
+          'Password Update Required',
+          'We detected a password reset requirement. Please change your password on the website to continue.',
+          true,
+        );
+        return;
+      }
+
       if (
         resjson.status === 'SUCCESS' &&
         (await this.saveToStorage(resjson.token))
@@ -100,7 +99,10 @@ class Login extends Component {
       }
     } catch (err) {
       console.error(err);
-      this.showAlert('Error', 'Something went wrong. Please try again.');
+      this.showAlert(
+        'Error',
+        err.message || 'Something went wrong. Please try again.',
+      );
     }
   };
 
@@ -115,7 +117,7 @@ class Login extends Component {
   }
 
   render() {
-    const {user, pass} = this.state;
+    const {url, user, pass} = this.state;
 
     return (
       <>
@@ -124,21 +126,17 @@ class Login extends Component {
           backgroundColor="transparent"
           translucent
         />
-        <SafeAreaView style={styles.safeAreaviewStyles}>
-          <GradientBackground>
-            <KeyboardAwareScrollView
-              contentContainerStyle={styles.container}
-              enableOnAndroid={true}
-              keyboardShouldPersistTaps="handled"
-              extraScrollHeight={100}
-              showsVerticalScrollIndicator={false}>
-              <Image
-                source={require('../assets/logo.png')}
-                style={styles.logo}
-              />
-              <View style={styles.formContainer}>
-                <Text style={styles.title}>Login</Text>
-                {/* <Text style={styles.subTopic}>Site Address (URL)</Text>
+        <GradientBackground>
+          <KeyboardAwareScrollView
+            contentContainerStyle={styles.container}
+            enableOnAndroid={true}
+            keyboardShouldPersistTaps="handled"
+            extraScrollHeight={100}
+            showsVerticalScrollIndicator={false}>
+            <Image source={require('../assets/logo.png')} style={styles.logo} />
+            <View style={styles.formContainer}>
+              <Text style={styles.title}>Login</Text>
+              {/* <Text style={styles.subTopic}>Site Address (URL)</Text>
               <TextInput
                 style={styles.input}
                 placeholder="sample.com/"
@@ -147,49 +145,47 @@ class Login extends Component {
                 autoCapitalize="none"
                 placeholderTextColor="#ccc"
               /> */}
-                <Text style={styles.subTopic}>Email</Text>
+              <Text style={styles.subTopic}>Email</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="username@gmail.com"
+                onChangeText={text => this.setState({user: text})}
+                value={user}
+                autoCapitalize="none"
+                placeholderTextColor="#ccc"
+              />
+              <Text style={styles.subTopic}>Password</Text>
+              <View style={styles.passwordContainer}>
                 <TextInput
-                  style={styles.input}
-                  placeholder="username@gmail.com"
-                  onChangeText={text => this.setState({user: text})}
-                  value={user}
-                  autoCapitalize="none"
+                  style={styles.passwordInput}
+                  placeholder="Password"
+                  onChangeText={text => this.setState({pass: text})}
+                  value={pass}
+                  secureTextEntry={this.state.secureText}
                   placeholderTextColor="#ccc"
                 />
-                <Text style={styles.subTopic}>Password</Text>
-                <View style={styles.passwordContainer}>
-                  <TextInput
-                    style={styles.passwordInput}
-                    placeholder="Password"
-                    onChangeText={text => this.setState({pass: text})}
-                    value={pass}
-                    secureTextEntry={this.state.secureText}
-                    placeholderTextColor="#ccc"
-                  />
-                  <Ionicons
-                    name={this.state.secureText ? 'eye-off' : 'eye'}
-                    size={24}
-                    color="#666"
-                    onPress={() =>
-                      this.setState(prevState => ({
-                        secureText: !prevState.secureText,
-                      }))
-                    }
-                    style={styles.eyeIcon}
-                  />
-                </View>
-
-                <GradientButton text="Log In" onPress={this._onLogin} />
+                <Ionicons
+                  name={this.state.secureText ? 'eye-off' : 'eye'}
+                  size={24}
+                  color="#666"
+                  onPress={() =>
+                    this.setState(prevState => ({
+                      secureText: !prevState.secureText,
+                    }))
+                  }
+                  style={styles.eyeIcon}
+                />
               </View>
-            </KeyboardAwareScrollView>
-          </GradientBackground>
-        </SafeAreaView>
+
+              <GradientButton text="Log In" onPress={this._onLogin} />
+            </View>
+          </KeyboardAwareScrollView>
+        </GradientBackground>
         <CustomAlert
           visible={this.state.alertVisible}
           title={this.state.alertTitle}
           message={this.state.alertMessage}
           onClose={this.hideAlert}
-          hideButton={this.state.alertHideButton}
         />
       </>
     );
@@ -203,12 +199,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     // paddingBottom: 10,
   },
-  safeAreaviewStyles: {
-    flex: 1,
-  },
   logo: {
-    width: width * 0.5,
-    height: width * 0.5,
+    width: 200,
+    height: 200,
     alignSelf: 'center',
     marginBottom: 20,
     resizeMode: 'contain',
@@ -216,8 +209,7 @@ const styles = StyleSheet.create({
   formContainer: {
     backgroundColor: '#1e1e1e',
     borderRadius: 16,
-    paddingHorizontal: width * 0.06,
-    paddingVertical: width * 0.04,
+    padding: 25,
     shadowColor: '#000',
     shadowOffset: {width: 0, height: 10},
     shadowOpacity: 0.25,
@@ -225,14 +217,14 @@ const styles = StyleSheet.create({
     elevation: 10,
   },
   title: {
-    fontSize: RFValue(22),
+    fontSize: 22,
     color: '#fff',
     marginBottom: 20,
     fontWeight: 'bold',
     textAlign: 'left',
   },
   subTopic: {
-    fontSize: RFValue(16),
+    fontSize: 16,
     color: '#ccc',
     marginBottom: 10,
     textAlign: 'left',
@@ -274,15 +266,9 @@ const styles = StyleSheet.create({
   },
   btnText: {
     color: '#fff',
-    fontSize: RFValue(16),
+    fontSize: 16,
     fontWeight: '600',
   },
 });
-
-Login.propTypes = {
-  navigation: PropTypes.shape({
-    navigate: PropTypes.func.isRequired,
-  }).isRequired,
-};
 
 export default Login;
