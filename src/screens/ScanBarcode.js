@@ -4,60 +4,83 @@ import {
   View,
   Text,
   Alert,
-  TouchableOpacity,
+  
   Platform,
-  Vibration,
   StatusBar,
+  PermissionsAndroid,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Camera, CameraType } from 'react-native-camera-kit';
-import Icon from 'react-native-vector-icons/Entypo';
-import Sound from 'react-native-sound';
 import BottomNavBar from '../components/BottomNavBar';
+
 
 class ScanBarcode extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      cameraReady: false,
-      url: '',
-      token: '',
-      eid: '',
+      
+      scanning: false,
+      token_storate: '',
       valid_ticket: '',
-      token_storate: 'true',
       name_customer: '',
       seat: '',
       checkin_time: '',
       e_cal: '',
-      flashlightOn: false,
+      token: '',
+      url: '',
+      eid: '',
+      
+      cameraPermissionGranted: false,
     };
   }
 
-  componentDidMount() {
-    try {
-      console.log("beep sound on");
-      Sound.setCategory('Playback');
-      this.beepSound = new Sound(require('../assets/beep.mp3'), (error) => {
-        if (error) {
-          console.log('❌ Failed to load beep sound:', error);
-        } else {
-          console.log('✅ Beep sound loaded');
-        }
-      });
-    } catch (e) {
-      console.log('❗ Error initializing sound:', e);
+  async componentDidMount() {
+  console.log('🚀 Component mounted');
+  await this.loadSettings();
+
+  // Persist eid to storage
+  const eidFromParams = this.props.route?.params?.eid;
+  if (eidFromParams) {
+    await AsyncStorage.setItem('@selectedEid', eidFromParams.toString());
+    this.setState({ eid: eidFromParams }); // Update state too
+  }
+
+  
+  this.checkCameraPermission();
+}
+
+
+
+  async loadSettings() {
+    const token = await AsyncStorage.getItem('@token');
+    const url = await AsyncStorage.getItem('@url');
+    
+    const eid = JSON.stringify(this.props.route.params.eid);
+    this.setState({ token, url, eid });
+  }
+
+  
+
+  async checkCameraPermission() {
+    if (Platform.OS === 'android') {
+      // Request CAMERA permission first
+      const cameraGranted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.CAMERA
+      );
+      const isCameraGranted = cameraGranted === PermissionsAndroid.RESULTS.GRANTED;
+      console.log('📷 Camera permission granted:', isCameraGranted);
+      this.setState({ cameraPermissionGranted: isCameraGranted });
+
+      
+    } else {
+      console.log('📷 iOS assumed camera permission granted');
+      this.setState({ cameraPermissionGranted: true});
     }
   }
 
-  toggleFlashlight = () => {
-    this.setState({ flashlightOn: !this.state.flashlightOn });
-  };
 
-  goToSettings = () => {
-    this.props.navigation.navigate('Setting');
-  };
 
-  reset() {
+  resetScan = () => {
     this.setState({
       token_storate: '',
       valid_ticket: '',
@@ -65,141 +88,150 @@ class ScanBarcode extends Component {
       seat: '',
       checkin_time: '',
       e_cal: '',
+      scanning: false,
     });
+  };
+
+ onBarCodeRead = async (event) => {
+  const scannedCode = event.nativeEvent?.codeStringValue;
+
+  console.log('📸 QR scanned:', scannedCode);
+  const { scanning, token_storate, token, url, eid} = this.state;
+
+  if (scanning || scannedCode === token_storate) {
+    console.log('⏹ Skipping duplicate or ongoing scan');
+    return;
   }
 
-  async onBarCodeRead(event) {
-    const token = await AsyncStorage.getItem('@token');
-    const url = await AsyncStorage.getItem('@url');
-    const eid = JSON.stringify(this.props.route.params.eid);
-    const vibrate = JSON.parse(await AsyncStorage.getItem('@vibrate'));
-    const beep = JSON.parse(await AsyncStorage.getItem('@beep'));
+  this.setState({ scanning: true });
+  console.log('🔄 Sending request to:', `${url}wp-json/meup/v1/validate_ticket/`);
 
-    if (event.data === this.state.token_storate) return;
-
-    fetch(`${url}wp-json/meup/v1/validate_ticket/`, {
+  try {
+    const response = await fetch(`${url}wp-json/meup/v1/validate_ticket/`, {
       method: 'POST',
       headers: {
         Accept: 'application/json',
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        token: token,
-        qrcode: event.data,
-        eid: eid,
+        token,
+        qrcode: scannedCode,
+        eid,
       }),
-    })
-      .then((res) => res.json())
-      .then((resjson) => {
-        if (resjson.status === 'SUCCESS') {
-          if (beep && this.beepSound?.isLoaded()) {
-            this.beepSound.stop(() => {
-              this.beepSound.play();
-            });
-          }
+    });
 
-          if (vibrate) {
-            Vibration.vibrate(500);
-          }
+    const resjson = await response.json();
+    console.log('✅ Response received:', resjson);
 
-          Alert.alert('SUCCESS', resjson.msg, [
-            { text: 'Continue', onPress: () => this.reset() },
-          ]);
-        } else if (resjson.status === 'FAIL') {
-          Alert.alert('FAIL', resjson.msg, [
-            { text: 'Continue', onPress: () => this.reset() },
-          ]);
-        }
+    
 
-        this.setState({
-          valid_ticket: resjson.status,
-          name_customer: resjson.name_customer,
-          seat: resjson.seat,
-          checkin_time: resjson.checkin_time,
-          e_cal: resjson.e_cal,
-          token_storate: event.data,
-        });
-      })
-      .catch((error) => {
-        alert('Error, please scan again');
-      });
+    if (resjson.status === 'SUCCESS') {
+      Alert.alert('SUCCESS', `${resjson.msg}\n${resjson.name_customer}\n${resjson.ticket_type}`, [
+        { text: 'Continue', onPress: () => this.resetScan() },
+      ]);
+    } else {
+      Alert.alert('FAIL', resjson.msg, [
+        { text: 'Continue', onPress: () => this.resetScan() },
+      ]);
+    }
+
+    this.setState({
+      valid_ticket: resjson.status,
+      name_customer: resjson.name_customer,
+      seat: resjson.seat,
+      checkin_time: resjson.checkin_time,
+      e_cal: resjson.e_cal,
+      token_storate: scannedCode,
+      ticket_type:resjson.ticket_type
+    });
+  } catch (error) {
+    console.log('❌ Scan request failed:', error);
+    Alert.alert('Error', 'Scan failed. Please try again.');
+    this.setState({ scanning: false });
   }
+};
+
+
+
+
+  // renderResultBox = () => {
+  //   const { valid_ticket, name_customer, seat, checkin_time, e_cal } = this.state;
+
+  //   const statusBox =
+  //     valid_ticket === 'SUCCESS' ? (
+  //       <View style={styles.success}><Text style={styles.valid_text}>V</Text></View>
+  //     ) : valid_ticket === 'FAIL' ? (
+  //       <View style={styles.fail}><Text style={styles.valid_text}>X</Text></View>
+  //     ) : <View />;
+
+  //   return (
+  //     <View style={styles.result}>
+  //       <View style={styles.result_left}>{statusBox}</View>
+  //       <View style={styles.result_right}>
+  //         {name_customer && (
+  //           <Text style={styles.label}>
+  //             Guest: <Text style={styles.value}>{name_customer}</Text>
+  //           </Text>
+  //         )}
+  //         {seat && (
+  //           <Text style={styles.label}>
+  //             Seat: <Text style={styles.value}>{seat}</Text>
+  //           </Text>
+  //         )}
+  //         {e_cal && (
+  //           <Text style={styles.label}>
+  //             Date-Time: <Text style={styles.value}>{e_cal}</Text>
+  //           </Text>
+  //         )}
+  //         {checkin_time && (
+  //           <Text style={styles.label}>
+  //             Check-in: <Text style={styles.value}>{checkin_time}</Text>
+  //           </Text>
+  //         )}
+  //       </View>
+  //     </View>
+  //   );
+  // };
 
   render() {
-    const {
-      valid_ticket,
-      name_customer,
-      seat,
-      checkin_time,
-      e_cal,
-    } = this.state;
-
-    const validJXS =
-      valid_ticket === 'SUCCESS' ? (
-        <View style={styles.success}><Text style={styles.valid_text}>V</Text></View>
-      ) : valid_ticket === 'FAIL' ? (
-        <View style={styles.fail}><Text style={styles.valid_text}>X</Text></View>
-      ) : <View />;
+    if (!this.state.cameraPermissionGranted) {
+      return (
+        <View style={styles.container}>
+          <Text style={{ textAlign: 'center', marginTop: 100 }}>
+            Camera permission not granted.
+          </Text>
+        </View>
+      );
+    }
 
     return (
       <View style={styles.container}>
         <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />
 
-        {/* Top Bar */}
-        <View style={styles.topBar}>
-          <TouchableOpacity onPress={this.toggleFlashlight}>
-            <Icon name={this.state.flashlightOn ? 'flash' : 'light-bulb'} size={30} color="#fff" />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={this.goToSettings}>
-            <Icon name="cog" size={30} color="#fff" />
-          </TouchableOpacity>
-        </View>
+        
+        
+        
 
-        {/* Camera */}
+
+        {/* Camera View */}
         <Camera
-          ref={(ref) => (this.camera = ref)}
           cameraType={CameraType.Back}
-          flashMode={this.state.flashlightOn ? 'on' : 'off'}
           scanBarcode={true}
-          onReadCode={(event) => this.onBarCodeRead(event)}
+          onReadCode={this.onBarCodeRead}
           showFrame={true}
           laserColor="red"
           frameColor="green"
           style={styles.preview}
         />
 
-        {/* Results */}
-        <View style={styles.result}>
-          <View style={styles.result_left}>{validJXS}</View>
-          <View style={styles.result_right}>
-            {name_customer && (
-              <Text style={styles.label}>
-                Guest: <Text style={styles.value}>{name_customer}</Text>
-              </Text>
-            )}
-            {seat && (
-              <Text style={styles.label}>
-                Seat: <Text style={styles.value}>{seat}</Text>
-              </Text>
-            )}
-            {e_cal && (
-              <Text style={styles.label}>
-                Date-Time: <Text style={styles.value}>{e_cal}</Text>
-              </Text>
-            )}
-            {checkin_time && (
-              <Text style={styles.label}>
-                Check-in: <Text style={styles.value}>{checkin_time}</Text>
-              </Text>
-            )}
-          </View>
-          
-        </View>
-        <View style={styles.bottomBarWrapper}>
-          <BottomNavBar />
-        </View>
+        {/* Result Info */}
+        {/* {this.renderResultBox()} */}
 
-        
+        {/* Bottom Nav */}
+        <View style={styles.bottomBarWrapper}>
+          <BottomNavBar eid={this.state.eid} />
+
+        </View>
       </View>
     );
   }
@@ -210,11 +242,11 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   bottomBarWrapper: {
-  position: 'absolute',
-  left: 20,
-  right: 20,
-  bottom: 40, // gap from the bottom of the screen
-},
+    position: 'absolute',
+    left: 20,
+    right: 20,
+    bottom: 40,
+  },
   topBar: {
     flexDirection: 'row',
     justifyContent: 'space-between',

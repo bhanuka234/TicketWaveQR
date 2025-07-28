@@ -1,4 +1,4 @@
-import React, {Component} from 'react';
+import React, { Component } from 'react';
 import {
   StyleSheet,
   View,
@@ -8,19 +8,22 @@ import {
   SafeAreaView,
   ActivityIndicator,
   BackHandler,
+  TouchableOpacity,
 } from 'react-native';
 import getToken from '../api/getToken';
 import EventsApi from '../api/EventsApi';
 import GradientBackground from '../components/GradientBackground';
 import GradientButton from '../components/GradientButton';
+import CustomAlert from "../components/CustomAlert";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 class Events extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      data: [],
-      loading: true,
       showLogoutAlert: false,
+      data: [],
+
     };
   }
 
@@ -40,7 +43,7 @@ class Events extends Component {
       )
       .catch(err => {
         console.log(err);
-        this.setState({loading: false});
+        this.setState({ loading: false });
       });
   }
 
@@ -49,6 +52,29 @@ class Events extends Component {
       this.backHandler.remove();
     }
   }
+
+
+  confirmLogout = () => {
+    this.setState({ showLogoutAlert: true });
+  };
+  hideLogoutAlert = () => {
+    this.setState({ showLogoutAlert: false });
+  };
+  logout = async () => {
+    try {
+      await AsyncStorage.multiSet([
+        ['@token', ''],
+        ['@isLoggedIn', '0'],
+      ]);
+      this.setState({showLogoutAlert: false});
+      this.props.navigation.reset({
+        index: 0,
+        routes: [{name: 'Login'}],
+      });
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
 
   render() {
     return (
@@ -64,6 +90,12 @@ class Events extends Component {
               <View style={styles.backContent}>
                 <Text style={styles.backText}>Events</Text>
               </View>
+
+              {/* Setting Icon at the end of the header */}
+              <TouchableOpacity onPress={this.confirmLogout} style={styles.logoutBtn}>
+                <Text style={styles.logoutText}>Logout</Text>
+              </TouchableOpacity>
+              
             </View>
 
             <View style={styles.container}>
@@ -76,7 +108,7 @@ class Events extends Component {
               ) : (
                 <FlatList
                   data={this.state.data}
-                  renderItem={({item, index}) => (
+                  renderItem={({ item, index }) => (
                     <View style={styles.card}>
                       <Text style={styles.indexText}>{index + 1}.</Text>
                       <Text style={styles.titleText}>{item.post_title}</Text>
@@ -102,6 +134,17 @@ class Events extends Component {
               )}
             </View>
           </SafeAreaView>
+          <CustomAlert
+            visible={this.state.showLogoutAlert}
+            title="Logout"
+            message="Are you sure you want to logout?"
+            onClose={this.hideLogoutAlert}
+            onConfirm={this.logout}
+            showCancel={true}
+            confirmText="Logout"
+            cancelText="Cancel"
+          />
+
         </GradientBackground>
       </>
     );
@@ -120,6 +163,10 @@ const styles = StyleSheet.create({
     marginLeft: -50,
     marginRight: -20,
     paddingRight: 20,
+
+  },
+  set: {
+    paddingTop: 30,
   },
   backContent: {
     flexDirection: 'row',
@@ -190,6 +237,7 @@ const styles = StyleSheet.create({
     color: '#ccc',
     textAlign: 'center',
   },
+  
 });
 
 export default Events;

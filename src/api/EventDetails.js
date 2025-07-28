@@ -1,28 +1,38 @@
-
-const EventDetails = (token, eid) => (
-  fetch(token[0] + 'wp-json/meup/v1/tickets_by_events/', {
+const EventDetails = (url, event_id) =>
+  fetch(url + 'wp-json/meup/v1/event_detail/', {
     method: 'POST',
     headers: {
-      Accept: 'application/json',
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      eid: eid,
-      token: token[1],
+      event_id: event_id.toString(), // Must be a string
     }),
   })
     .then((res) => res.json())
     .then((json) => {
-      if (json.status === 'SUCCESS' && json.events.length > 0) {
-        return json.events[0];
+      console.log('EventDetails response:', json); // helpful for debugging
+
+      if (json && json.status === 'SUCCESS' && json.event) {
+        const calendar = json.event.event_calendar || '';
+        let timeOnly = '';
+
+        if (calendar.includes(' - ')) {
+          const [start, end] = calendar.split(' - ');
+          const startTime = start.trim().split(' ').slice(-2).join(' ');
+          const endTime = end.trim().split(' ').slice(-2).join(' ');
+          timeOnly = `${startTime} - ${endTime}`;
+        }
+
+        return {
+          event_time: timeOnly,
+        };
       } else {
-        throw new Error('Invalid response or no event data');
+        throw new Error('Invalid response from event_detail');
       }
     })
     .catch((error) => {
-      console.error('Error in TicketsApi:', error);
-      return null;
-    })
-);
+      console.error('Error in EventDetails:', error);
+      return { event_time: '' };
+    });
 
 module.exports = EventDetails;

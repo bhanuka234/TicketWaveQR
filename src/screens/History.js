@@ -1,4 +1,4 @@
-import React, {Component} from 'react';
+import React, { Component } from 'react';
 import {
   View,
   Text,
@@ -10,9 +10,11 @@ import {
   FlatList,
 } from 'react-native';
 import GradientBackground from '../components/GradientBackground';
-import {SafeAreaView} from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import BottomNavBar from '../components/BottomNavBar';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Tickets_by_events from '../api/Tickets_by_events';
+
 
 class History extends Component {
   state = {
@@ -33,60 +35,43 @@ class History extends Component {
 
   fetchScannedTickets = async (eid = null) => {
     try {
-      const token = await AsyncStorage.multiGet(['@url', '@token']);
-      const url = token[0][1];
-      const authToken = token[1][1];
+      const stored = await AsyncStorage.multiGet(['@url', '@token']);
+      const url = stored.find(item => item[0] === '@url')[1];
+      const token = stored.find(item => item[0] === '@token')[1];
 
-      let response;
-      if (eid) {
-        // Filtered by Event
-        response = await fetch(`${url}wp-json/meup/v1/tickets_by_events/`, {
-          method: 'POST',
-          headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            eid: eid,
-            token: authToken,
-          }),
-        });
+      const event = await Tickets_by_events([url, token], eid);
+
+
+      if (!event) {
+        this.setState({ loading: false });
+        return;
       }
 
-      const json = await response.json();
+      const tickets = (event.tickets || [])
+        .filter(ticket => ticket.ticket_status === 'checked')
+        .map(ticket => ({
+          id: ticket.ticket_id,
+          ticketNum: ticket.qr_code,
+          eventTitle: event.event_title,
+          customerName: ticket.customer_name,
+        }));
 
-      if (json.status === 'SUCCESS') {
-        const event = json.events[0];
+      this.setState({ tickets, loading: false });
 
-        const tickets = (event?.tickets || [])
-          .filter(ticket => ticket.ticket_status === 'checked')
-          .map(ticket => ({
-            id: ticket.ticket_id,
-            ticketNum: ticket.qr_code,
-            eventTitle: eid ? json.events[0].event_title : ticket.event_title,
-            customerName: ticket.customer_name,
-          }));
-
-        this.setState({tickets, loading: false});
-      } else {
-        console.error('Failed to load tickets');
-        this.setState({loading: false});
-      }
     } catch (error) {
-      console.error('Fetch error:', error);
-      this.setState({loading: false});
+      console.error('Failed to fetch tickets:', error);
+      this.setState({ loading: false });
     }
   };
 
-  renderTicket = ({item}) => (
+
+  renderTicket = ({ item }) => (
     <TouchableOpacity
       onPress={() =>
         this.props.navigation.navigate('TicketView', {
-          ticketId: item.id,
+          
           ticketNum: item.ticketNum,
-          eventTitle: item.eventTitle,
-          customerName: item.customerName,
-          date: '10.47pm',
+          
         })
       }>
       <View style={styles.cardStyle}>
@@ -109,7 +94,7 @@ class History extends Component {
 
         {/* Second row: Date aligned to the right */}
         <View style={styles.dateRow}>
-          <Text style={styles.ticketDetails2}>10.47pm</Text>
+          <Text style={styles.ticketDetails2}>{item.customerName}</Text>
         </View>
       </View>
     </TouchableOpacity>
@@ -173,7 +158,7 @@ const styles = StyleSheet.create({
     fontSize: 25,
     color: '#FF71D2',
     marginLeft: -30,
-    fontWeight:'500',
+    fontWeight: '500',
   },
   cardStyle: {
     backgroundColor: '#2c2c2c',

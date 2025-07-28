@@ -1,64 +1,108 @@
-import React, {Component} from 'react';
+import React, { Component } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   Image,
   StatusBar,
-  SafeAreaView,
+  SafeAreaView, 
   TouchableOpacity,
   Alert,
 } from 'react-native';
 import GradientBackground from '../components/GradientBackground';
 import GradientButton from '../components/GradientButton';
-// import {PermissionsAndroid, Alert} from 'react-native';
-import BottomNavBar from '../components/BottomNavBar';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons'; // <-- Icon import
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons'; // <-- MaterialCommunityIcons import
+import Tickets_by_events from '../api/Tickets_by_events';
 import EventDetails from '../api/EventDetails';
 import getToken from '../api/getToken';
 import RNHTMLtoPDF from 'react-native-html-to-pdf';
+import { ScrollView } from 'react-native';
+import { PermissionsAndroid,Platform } from 'react-native';
+
+
 
 class ListTickets extends Component {
   constructor(props) {
     super(props);
-    const {eid} = props.route.params;
+    const { eid } = props.route.params;
     this.state = {
-      eid: parseInt(eid), // Set eid directly from route params
+      eid: parseInt(eid),       // Set eid directly from route params
       totalTickets: 0,
       soldTickets: 0,
       usedTickets: 0,
       remainingTickets: 0,
       tickets: [],
+      eventTime: '', 
+
     };
   }
 
-  async componentDidMount() {
-    try {
-      const token = await getToken();
-      const eventData = await EventDetails(token, this.state.eid);
+  
+async componentDidMount() {
+  try {
+    const token = await getToken(); 
 
-      if (eventData) {
-        this.setState({
-          totalTickets: eventData.total_tickets || 0,
-          usedTickets: eventData.tickets_checked || 0,
-          remainingTickets: eventData.tickets_available || 0,
-          soldTickets:
-            (eventData.tickets_checked || 0) +
-            (eventData.tickets_available || 0),
-          tickets: eventData.tickets || [], // <-- store tickets
-        });
-      }
-    } catch (error) {
-      console.error('Failed to fetch event ticket data:', error);
+    const [eventData, eventInfo] = await Promise.all([
+      Tickets_by_events(token, this.state.eid),
+      EventDetails(token[0], this.state.eid), // <-- pass only base URL
+    ]);
+
+    if (eventData) {
+      this.setState({
+        totalTickets: eventData.total_tickets || 0,
+        usedTickets: eventData.tickets_checked || 0,
+        remainingTickets: eventData.tickets_available || 0,
+        soldTickets:
+          (eventData.tickets_checked || 0) +
+          (eventData.tickets_available || 0),
+        tickets: eventData.tickets || [],
+        eventTime: eventInfo.event_time || '', // now safely accessing parsed time
+      });
     }
+  } catch (error) {
+    console.error('Failed to fetch ticket/event data:', error);
   }
+}
+
+
 
   handleBack = () => {
     this.props.navigation.goBack();
   };
+async requestStoragePermission() {
+  if (Platform.OS === 'android') {
+    try {
+      const granted = await PermissionsAndroid.requestMultiple([
+        PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
+        PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+      ]);
+
+      const readGranted = granted['android.permission.READ_EXTERNAL_STORAGE'] === PermissionsAndroid.RESULTS.GRANTED;
+      const writeGranted = granted['android.permission.WRITE_EXTERNAL_STORAGE'] === PermissionsAndroid.RESULTS.GRANTED;
+
+      if (readGranted && writeGranted) {
+        console.log('Storage permissions granted');
+        return true;
+      } else {
+        console.warn('Storage permissions denied');
+        return false;
+      }
+    } catch (err) {
+      console.warn(err);
+      return false;
+    }
+  }
+  return true; // iOS doesn't require these permissions
+}
   generatePdf = async () => {
-    const {title} = this.props.route.params;
-    const {soldTickets, usedTickets, remainingTickets, tickets} = this.state;
+const permissionGranted = await this.requestStoragePermission();
+if (!permissionGranted) {
+  Alert.alert('Permission Denied', 'Storage permission is required to save the PDF.');
+  return;
+}
+
+    const { title } = this.props.route.params;
+    const { soldTickets, usedTickets, remainingTickets, tickets,eventTime } = this.state;
 
     const ticketRows = tickets
       .map((ticket, index) => {
@@ -70,13 +114,9 @@ class ListTickets extends Component {
         return `
         <tr style="${rowStyle}">
           <td style="border: 1px solid #999; padding: 6px;">${index + 1}</td>
-          <td style="border: 1px solid #999; padding: 6px;">${
-            ticket.customer_name
-          }</td>
+          <td style="border: 1px solid #999; padding: 6px;">${ticket.customer_name}</td>
           <td style="border: 1px solid #999; padding: 6px;">${ticket.email}</td>
-          <td style="border: 1px solid #999; padding: 6px;">${
-            ticket.qr_code
-          }</td>
+          <td style="border: 1px solid #999; padding: 6px;">${ticket.qr_code}</td>
           <td style="border: 1px solid #999; padding: 6px; font-weight: bold;">
             ${ticket.ticket_status || 'Not Checked'}
           </td>
@@ -87,6 +127,7 @@ class ListTickets extends Component {
     const htmlContent = `
     <div style="font-family: Arial, sans-serif; padding: 20px;">
       <h1 style="text-align:center; color:#333;">${title}</h1>
+      <p style="text-align:center; color:#333;">${eventTime}
       <table style="width:100%; font-size:16px; margin-bottom:20px;">
         <tr><td><strong>Sold Tickets:</strong></td><td>${soldTickets}</td></tr>
         <tr><td><strong>Used Tickets:</strong></td><td>${usedTickets}</td></tr>
@@ -118,6 +159,7 @@ class ListTickets extends Component {
         directory: 'Download',
       };
 
+
       const file = await RNHTMLtoPDF.convert(options);
       Alert.alert('Success', `PDF saved to:\n${file.filePath}`);
       console.log('PDF generated at:', file.filePath);
@@ -127,8 +169,10 @@ class ListTickets extends Component {
     }
   };
 
+  
+
   render() {
-    const {title} = this.props.route.params;
+    const { title } = this.props.route.params;
 
     return (
       <>
@@ -139,6 +183,7 @@ class ListTickets extends Component {
         />
         <GradientBackground>
           <SafeAreaView style={styles.safe}>
+            <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
             <View style={styles.header}>
               <TouchableOpacity onPress={this.handleBack}>
                 <View style={styles.backContent}>
@@ -148,8 +193,10 @@ class ListTickets extends Component {
                     resizeMode="contain"
                   />
                   <Text style={styles.backText}>Events</Text>
+                  
                 </View>
               </TouchableOpacity>
+              
             </View>
 
             <Text style={styles.title}>{title}</Text>
@@ -167,20 +214,18 @@ class ListTickets extends Component {
               </View>
               <View style={styles.detailRow}>
                 <Text style={styles.detailLabel}>Remaining Tickets</Text>
-                <Text style={styles.detailValue}>
-                  {this.state.remainingTickets}
-                </Text>
+                <Text style={styles.detailValue}>{this.state.remainingTickets}</Text>
               </View>
-
-              {/* <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}>Selected Time</Text>
+              
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}></Text>
 
               </View>
               <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}>From</Text>
+                <Text style={styles.detailLabel}>Time</Text>
                 <View style={styles.dateRow}>
-                  <Text style={styles.detailValue}>2025-07-15</Text>
-                  <Icon
+                  <Text style={styles.detailValue}>{this.state.eventTime}</Text>
+                  <MaterialCommunityIcons
                     name="calendar-month"
                     size={20}
                     color="#FF71D2"
@@ -188,23 +233,12 @@ class ListTickets extends Component {
                   />
                 </View>
               </View>
-              <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}>To</Text>
-                <View style={styles.dateRow}>
-                  <Text style={styles.detailValue}>2025-07-16</Text>
-                  <Icon
-                    name="calendar-month"
-                    size={20}
-                    color="#FF71D2"
-                    style={styles.iconMargin}
-                  />
-                </View>
-              </View> */}
+              
               <View style={styles.pdfbutton}>
                 <GradientButton
                   text={
                     <View style={styles.pdfContent}>
-                      <Icon
+                      <MaterialCommunityIcons
                         name="file-pdf-box"
                         size={26}
                         color="#fff"
@@ -254,6 +288,7 @@ class ListTickets extends Component {
               style={styles.scanBtn}
               textStyle={styles.btnTextWrap}
             />
+           </ScrollView>
           </SafeAreaView>
         </GradientBackground>
       </>
@@ -263,13 +298,15 @@ class ListTickets extends Component {
 
 const styles = StyleSheet.create({
   safe: {
-    flex: 1,
-    paddingHorizontal: 20,
-  },
+  flex: 1,
+  paddingHorizontal: 20,
+},
+
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     marginLeft: -50,
+    justifyContent: 'space-between',
   },
   title: {
     fontSize: 18,
@@ -337,28 +374,29 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   scanBtn: {
-    paddingHorizontal: 40,
-    paddingVertical: 12,
-    borderRadius: 10,
-    alignSelf: 'center',
-    minWidth: 200,
-    minHeight: 70,
-    marginBottom: 150,
-    marginTop: 30,
-  },
-  historyBtn: {
-    paddingHorizontal: 40,
-    paddingVertical: 12,
-    borderRadius: 10,
-    alignSelf: 'center',
-    minWidth: 200,
-    minHeight: 70,
-    marginBottom: 20,
-  },
+  paddingVertical: 12,
+  borderRadius: 10,
+  alignSelf: 'center',
+  width: '80%',
+  minHeight: 60, // optional: reduce from 70 if it's too tall
+  marginBottom: 100,
+  marginTop: 30,
+},
+historyBtn: {
+  paddingVertical: 12,
+  borderRadius: 10,
+  alignSelf: 'center',
+  width: '80%',
+  minHeight: 60,
+  marginBottom: 20,
+},
+
   scanContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'center',
+},
+
   scanIcon: {
     width: 40,
     height: 40,
