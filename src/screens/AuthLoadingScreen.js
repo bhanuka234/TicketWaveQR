@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, {Component} from 'react';
 import {
   StatusBar,
   StyleSheet,
@@ -7,15 +7,23 @@ import {
   Text,
   KeyboardAvoidingView,
   Platform,
+  SafeAreaView,
+  Dimensions,
 } from 'react-native';
 import PropTypes from 'prop-types';
 import getToken from '../api/getToken';
 import checkLogin from '../api/checkLogin';
-import GradientBackground from '../components/GradientBackground'; // Assuming this provides the background gradient
+import GradientBackground from '../components/GradientBackground';
+import {RFValue} from 'react-native-responsive-fontsize';
+
+// const { width, height } = Dimensions.get('window');
 
 export default class AuthLoadingScreen extends Component {
   constructor(props) {
     super(props);
+  }
+
+  componentDidMount() {
     this._loadData();
   }
 
@@ -27,36 +35,44 @@ export default class AuthLoadingScreen extends Component {
           backgroundColor="transparent"
           translucent
         />
-        <GradientBackground>
-          <KeyboardAvoidingView
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            style={styles.container}>
-            <Image source={require('../assets/logo.png')} style={styles.logo} />
-            <ActivityIndicator size="70" color="#ffffff" style={styles.spinner} />
-            <Text style={styles.loadingText}>Loading...</Text>
-          </KeyboardAvoidingView>
-        </GradientBackground>
+        <SafeAreaView style={styles.safeAreaStyles}>
+          <GradientBackground>
+            <KeyboardAvoidingView
+              behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+              style={styles.container}>
+              <Image
+                source={require('../assets/logo.png')}
+                style={styles.logo}
+              />
+              <ActivityIndicator
+                size="70"
+                color="#ffffff"
+                style={styles.spinner}
+              />
+              <Text style={styles.loadingText}>Loading...</Text>
+            </KeyboardAvoidingView>
+          </GradientBackground>
+        </SafeAreaView>
       </>
     );
   }
 
   _loadData = async () => {
-  try {
-    const token = await getToken();
-    console.log('🔐 Token:', token);
+    try {
+      const token = await getToken();
+      console.log('🔐 Token:', token);
 
-    const res = await checkLogin(token);
-    console.log('✅ Login Check Result:', res);
+      const res = await checkLogin(token);
+      console.log('✅ Login Check Result:', res);
 
-    this.props.navigation.navigate(
-      res.status === 'SUCCESS' ? 'Login' : 'Login',
-    );
-  } catch (err) {
-    console.log('❌ Error in auth flow:', err);
-    this.props.navigation.navigate('Login');
-  }
-};
-
+      this.props.navigation.navigate(
+        res.status === 'SUCCESS' ? 'Login' : 'Login',
+      );
+    } catch (err) {
+      console.log('❌ Error in auth flow:', err);
+      this.props.navigation.navigate('Login');
+    }
+  };
 }
 
 AuthLoadingScreen.propTypes = {
@@ -70,6 +86,9 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  safeAreaStyles: {
+    flex: 1,
   },
   logo: {
     width: 250,

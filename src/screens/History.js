@@ -69,9 +69,7 @@ class History extends Component {
     <TouchableOpacity
       onPress={() =>
         this.props.navigation.navigate('TicketView', {
-          
           ticketNum: item.ticketNum,
-          
         })
       }>
       <View style={styles.cardStyle}>
