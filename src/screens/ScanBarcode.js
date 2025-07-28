@@ -1,24 +1,24 @@
-import React, { Component } from 'react';
+import React, {Component} from 'react';
 import {
   StyleSheet,
   View,
   Text,
   Alert,
-  
   Platform,
   StatusBar,
   PermissionsAndroid,
+  Dimensions,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Camera, CameraType } from 'react-native-camera-kit';
+import {Camera, CameraType} from 'react-native-camera-kit';
 import BottomNavBar from '../components/BottomNavBar';
 
+const { width, height } = Dimensions.get('window');
 
 class ScanBarcode extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      
       scanning: false,
       token_storate: '',
       valid_ticket: '',
@@ -29,56 +29,45 @@ class ScanBarcode extends Component {
       token: '',
       url: '',
       eid: '',
-      
       cameraPermissionGranted: false,
     };
   }
 
   async componentDidMount() {
-  console.log('🚀 Component mounted');
-  await this.loadSettings();
+    console.log('🚀 Component mounted');
+    await this.loadSettings();
 
-  // Persist eid to storage
-  const eidFromParams = this.props.route?.params?.eid;
-  if (eidFromParams) {
-    await AsyncStorage.setItem('@selectedEid', eidFromParams.toString());
-    this.setState({ eid: eidFromParams }); // Update state too
+    // Persist eid to storage
+    const eidFromParams = this.props.route?.params?.eid;
+    if (eidFromParams) {
+      await AsyncStorage.setItem('@selectedEid', eidFromParams.toString());
+      this.setState({eid: eidFromParams}); // Update state too
+    }
+    this.checkCameraPermission();
   }
-
-  
-  this.checkCameraPermission();
-}
-
-
 
   async loadSettings() {
     const token = await AsyncStorage.getItem('@token');
     const url = await AsyncStorage.getItem('@url');
-    
     const eid = JSON.stringify(this.props.route.params.eid);
-    this.setState({ token, url, eid });
+    this.setState({token, url, eid});
   }
-
-  
 
   async checkCameraPermission() {
     if (Platform.OS === 'android') {
       // Request CAMERA permission first
       const cameraGranted = await PermissionsAndroid.request(
-        PermissionsAndroid.PERMISSIONS.CAMERA
+        PermissionsAndroid.PERMISSIONS.CAMERA,
       );
-      const isCameraGranted = cameraGranted === PermissionsAndroid.RESULTS.GRANTED;
+      const isCameraGranted =
+        cameraGranted === PermissionsAndroid.RESULTS.GRANTED;
       console.log('📷 Camera permission granted:', isCameraGranted);
-      this.setState({ cameraPermissionGranted: isCameraGranted });
-
-      
+      this.setState({cameraPermissionGranted: isCameraGranted});
     } else {
       console.log('📷 iOS assumed camera permission granted');
-      this.setState({ cameraPermissionGranted: true});
+      this.setState({cameraPermissionGranted: true});
     }
   }
-
-
 
   resetScan = () => {
     this.setState({
@@ -92,67 +81,67 @@ class ScanBarcode extends Component {
     });
   };
 
- onBarCodeRead = async (event) => {
-  const scannedCode = event.nativeEvent?.codeStringValue;
+  onBarCodeRead = async event => {
+    const scannedCode = event.nativeEvent?.codeStringValue;
 
-  console.log('📸 QR scanned:', scannedCode);
-  const { scanning, token_storate, token, url, eid} = this.state;
+    console.log('📸 QR scanned:', scannedCode);
+    const {scanning, token_storate, token, url, eid} = this.state;
 
-  if (scanning || scannedCode === token_storate) {
-    console.log('⏹ Skipping duplicate or ongoing scan');
-    return;
-  }
-
-  this.setState({ scanning: true });
-  console.log('🔄 Sending request to:', `${url}wp-json/meup/v1/validate_ticket/`);
-
-  try {
-    const response = await fetch(`${url}wp-json/meup/v1/validate_ticket/`, {
-      method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        token,
-        qrcode: scannedCode,
-        eid,
-      }),
-    });
-
-    const resjson = await response.json();
-    console.log('✅ Response received:', resjson);
-
-    
-
-    if (resjson.status === 'SUCCESS') {
-      Alert.alert('SUCCESS', `${resjson.msg}\n${resjson.name_customer}\n${resjson.ticket_type}`, [
-        { text: 'Continue', onPress: () => this.resetScan() },
-      ]);
-    } else {
-      Alert.alert('FAIL', resjson.msg, [
-        { text: 'Continue', onPress: () => this.resetScan() },
-      ]);
+    if (scanning || scannedCode === token_storate) {
+      console.log('⏹ Skipping duplicate or ongoing scan');
+      return;
     }
 
-    this.setState({
-      valid_ticket: resjson.status,
-      name_customer: resjson.name_customer,
-      seat: resjson.seat,
-      checkin_time: resjson.checkin_time,
-      e_cal: resjson.e_cal,
-      token_storate: scannedCode,
-      ticket_type:resjson.ticket_type
-    });
-  } catch (error) {
-    console.log('❌ Scan request failed:', error);
-    Alert.alert('Error', 'Scan failed. Please try again.');
-    this.setState({ scanning: false });
-  }
-};
+    this.setState({scanning: true});
+    console.log(
+      '🔄 Sending request to:',
+      `${url}wp-json/meup/v1/validate_ticket/`,
+    );
 
+    try {
+      const response = await fetch(`${url}wp-json/meup/v1/validate_ticket/`, {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          token,
+          qrcode: scannedCode,
+          eid,
+        }),
+      });
 
+      const resjson = await response.json();
+      console.log('✅ Response received:', resjson);
 
+      if (resjson.status === 'SUCCESS') {
+        Alert.alert(
+          'SUCCESS',
+          `${resjson.msg}\n${resjson.name_customer}\n${resjson.ticket_type}`,
+          [{text: 'Continue', onPress: () => this.resetScan()}],
+        );
+      } else {
+        Alert.alert('FAIL', resjson.msg, [
+          {text: 'Continue', onPress: () => this.resetScan()},
+        ]);
+      }
+
+      this.setState({
+        valid_ticket: resjson.status,
+        name_customer: resjson.name_customer,
+        seat: resjson.seat,
+        checkin_time: resjson.checkin_time,
+        e_cal: resjson.e_cal,
+        token_storate: scannedCode,
+        ticket_type: resjson.ticket_type,
+      });
+    } catch (error) {
+      console.log('❌ Scan request failed:', error);
+      Alert.alert('Error', 'Scan failed. Please try again.');
+      this.setState({scanning: false});
+    }
+  };
 
   // renderResultBox = () => {
   //   const { valid_ticket, name_customer, seat, checkin_time, e_cal } = this.state;
@@ -197,7 +186,7 @@ class ScanBarcode extends Component {
     if (!this.state.cameraPermissionGranted) {
       return (
         <View style={styles.container}>
-          <Text style={{ textAlign: 'center', marginTop: 100 }}>
+          <Text style={styles.camPermission}>
             Camera permission not granted.
           </Text>
         </View>
@@ -206,12 +195,11 @@ class ScanBarcode extends Component {
 
     return (
       <View style={styles.container}>
-        <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />
-
-        
-        
-        
-
+        <StatusBar
+          translucent
+          backgroundColor="transparent"
+          barStyle="light-content"
+        />
 
         {/* Camera View */}
         <Camera
@@ -230,7 +218,6 @@ class ScanBarcode extends Component {
         {/* Bottom Nav */}
         <View style={styles.bottomBarWrapper}>
           <BottomNavBar eid={this.state.eid} />
-
         </View>
       </View>
     );
@@ -246,22 +233,6 @@ const styles = StyleSheet.create({
     left: 20,
     right: 20,
     bottom: 40,
-  },
-  topBar: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 15,
-    paddingLeft: 85,
-    paddingRight: 85,
-    backgroundColor: '#2c2c2c',
-    position: 'absolute',
-    borderRadius: 15,
-    elevation: 25,
-    top: Platform.OS === 'ios' ? 40 : 80,
-    left: 55,
-    right: 55,
-    zIndex: 1,
   },
   preview: {
     flex: 1,
@@ -283,14 +254,6 @@ const styles = StyleSheet.create({
     height: '100%',
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  result_right: {
-    flex: 4,
-    backgroundColor: '#000',
-    height: '100%',
-    justifyContent: 'center',
-    paddingLeft: 10,
-    paddingTop: 5,
   },
   success: {
     backgroundColor: '#90ba3e',
@@ -317,6 +280,11 @@ const styles = StyleSheet.create({
   value: {
     color: '#fff',
     fontWeight: 'bold',
+  },
+  camPermission:{
+    textAlign: 'center',
+    marginTop: height * 0.2,
+    color: 'black',
   },
 });
 
