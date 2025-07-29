@@ -11,6 +11,7 @@ import {
   ScrollView,
   PermissionsAndroid,
   Platform,
+  Dimensions,
 } from 'react-native';
 import GradientBackground from '../components/GradientBackground';
 import GradientButton from '../components/GradientButton';
@@ -20,6 +21,8 @@ import EventDetails from '../api/EventDetails';
 import getToken from '../api/getToken';
 import RNHTMLtoPDF from 'react-native-html-to-pdf';
 import {RFValue} from 'react-native-responsive-fontsize';
+
+const { width, height } = Dimensions.get('window');
 
 class ListTickets extends Component {
   constructor(props) {
@@ -208,7 +211,7 @@ class ListTickets extends Component {
               </View>
 
               <Text style={styles.title}>{title}</Text>
-              <View style={styles.spacer} />
+              {/* <View style={styles.spacer} /> */}
 
               {/* Event details section */}
               <View style={styles.detailsBox}>
@@ -279,8 +282,7 @@ class ListTickets extends Component {
                   />
                 </View>
               </View>
-              <GradientButton
-                text={
+              <GradientButton text={
                   <View style={styles.scanContent}>
                     <Image
                       source={require('../assets/oHistory.png')}
@@ -327,12 +329,12 @@ class ListTickets extends Component {
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    paddingHorizontal: 20,
+    paddingHorizontal:  width * 0.04,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginLeft: -50,
+    marginLeft: height * -0.05,
     justifyContent: 'space-between',
   },
   title: {
@@ -340,8 +342,8 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#fff',
     textAlign: 'left',
-    marginTop: 10,
-    paddingHorizontal: 10,
+    // marginTop: 10,
+    paddingHorizontal:  width * 0.02,
   },
   backContent: {
     flexDirection: 'row',
@@ -350,24 +352,24 @@ const styles = StyleSheet.create({
   backText: {
     fontSize: RFValue(18),
     color: '#FF71D2',
-    marginLeft: -30,
+    marginLeft: height * -0.03,
     fontWeight: '500',
   },
   spacer: {
-    marginVertical: 10,
+    marginVertical: height * 0.01,
   },
   detailsBox: {
     backgroundColor: '#333333D1',
     borderRadius: 10,
-    padding: 30,
-    marginVertical: 20,
-    marginBottom: 80,
+    padding:  width * 0.05,
+    marginVertical: height * 0.02,
+    marginBottom: height * 0.05,
   },
   detailRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginVertical: 5,
+    marginVertical: height * 0.005,
   },
   detailLabel: {
     fontSize: RFValue(13),
@@ -384,7 +386,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   iconMargin: {
-    marginLeft: 8,
+    marginLeft: height * 0.008,
   },
   pdfContent: {
     flexDirection: 'row',
@@ -395,30 +397,29 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: RFValue(15),
     fontWeight: '600',
-    marginLeft: 8,
+    marginLeft: height * 0.008,
   },
   pdfbutton: {
-    marginTop: 25,
-    marginBottom: 15,
+    marginTop: height * 0.025,
+    marginBottom: height * 0.015,
   },
   scanBtn: {
-    paddingVertical: 12,
+    paddingVertical: width * 0.012,
     borderRadius: 10,
     alignSelf: 'center',
     width: '80%',
     minHeight: 60, // optional: reduce from 70 if it's too tall
-    marginBottom: 100,
-    marginTop: 30,
+    marginBottom: height * 0.1,
+    marginTop: height * 0.03,
   },
   historyBtn: {
-    paddingVertical: 12,
+    paddingVertical: width * 0.012,
     borderRadius: 10,
     alignSelf: 'center',
     width: '80%',
     minHeight: 60,
-    marginBottom: 20,
+    // marginBottom: 20,
   },
-
   scanContent: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -427,13 +428,13 @@ const styles = StyleSheet.create({
   scanIcon: {
     width: 40,
     height: 40,
-    marginRight: 10,
+    marginRight: height * 0.02,
     tintColor: '#fff',
   },
   historyIcon: {
     width: 40,
     height: 40,
-    marginRight: 10,
+    marginRight: height * 0.01,
   },
   scanText: {
     fontSize: RFValue(15),
