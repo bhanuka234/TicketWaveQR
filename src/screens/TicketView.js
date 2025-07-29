@@ -182,9 +182,9 @@ const styles = StyleSheet.create({
     fontSize: RFValue(13),
   },
   ticketDate: {
-    color: '#CCCCCC',
+    color: '#919191ff',
     fontSize: RFValue(10),
-    marginLeft: height * 0.1,
+    // marginLeft: height * 0.1,
   },
   line: {
     borderBottomWidth: 1,
