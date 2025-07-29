@@ -5,34 +5,27 @@ const EventDetails = (url, event_id) =>
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      event_id: event_id.toString(), // Must be a string
+      event_id: event_id.toString(),
     }),
   })
     .then((res) => res.json())
     .then((json) => {
-      console.log('EventDetails response:', json); // helpful for debugging
-
       if (json && json.status === 'SUCCESS' && json.event) {
         const calendar = json.event.event_calendar || '';
-        let timeOnly = '';
 
         if (calendar.includes(' - ')) {
-          const [start, end] = calendar.split(' - ');
-          const startTime = start.trim().split(' ').slice(-2).join(' ');
-          const endTime = end.trim().split(' ').slice(-2).join(' ');
-          timeOnly = `${startTime} - ${endTime}`;
+          const [from, to] = calendar.split(' - ');
+          return {
+            from: from.trim(),
+            to: to.trim(),
+          };
         }
-
-        return {
-          event_time: timeOnly,
-        };
-      } else {
-        throw new Error('Invalid response from event_detail');
       }
+      throw new Error('Invalid response from event_detail');
     })
     .catch((error) => {
       console.error('Error in EventDetails:', error);
-      return { event_time: '' };
+      return { from: '', to: '' };
     });
 
 module.exports = EventDetails;

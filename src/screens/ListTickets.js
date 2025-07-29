@@ -19,7 +19,7 @@ import Tickets_by_events from '../api/Tickets_by_events';
 import EventDetails from '../api/EventDetails';
 import getToken from '../api/getToken';
 import RNHTMLtoPDF from 'react-native-html-to-pdf';
-import { RFValue } from 'react-native-responsive-fontsize';
+import {RFValue} from 'react-native-responsive-fontsize';
 
 class ListTickets extends Component {
   constructor(props) {
@@ -32,11 +32,16 @@ class ListTickets extends Component {
       usedTickets: 0,
       remainingTickets: 0,
       tickets: [],
-      eventTime: '',
+      eventFrom: '',
+      eventTo: '',
     };
   }
 
-  async componentDidMount() {
+  componentDidMount() {
+    this.initializeData();
+  }
+
+  async initializeData() {
     try {
       const token = await getToken();
       const [eventData, eventInfo] = await Promise.all([
@@ -52,7 +57,9 @@ class ListTickets extends Component {
             (eventData.tickets_checked || 0) +
             (eventData.tickets_available || 0),
           tickets: eventData.tickets || [],
-          eventTime: eventInfo.event_time || '', // now safely accessing parsed time
+          eventFrom: eventInfo.from || '',
+          eventTo: eventInfo.to || '',
+          // now safely accessing parsed time
         });
       }
     } catch (error) {
@@ -228,11 +235,24 @@ class ListTickets extends Component {
                   <Text style={styles.detailLabel}></Text>
                 </View>
                 <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>Time</Text>
+                  <Text style={styles.detailLabel}>From</Text>
                   <View style={styles.dateRow}>
                     <Text style={styles.detailValue}>
-                      {this.state.eventTime}
+                      {this.state.eventFrom}
                     </Text>
+                    <MaterialCommunityIcons
+                      name="calendar-month"
+                      size={20}
+                      color="#FF71D2"
+                      style={styles.iconMargin}
+                    />
+                  </View>
+                </View>
+
+                <View style={styles.detailRow}>
+                  <Text style={styles.detailLabel}>To</Text>
+                  <View style={styles.dateRow}>
+                    <Text style={styles.detailValue}>{this.state.eventTo}</Text>
                     <MaterialCommunityIcons
                       name="calendar-month"
                       size={20}
@@ -309,7 +329,6 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 20,
   },
-
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -338,9 +357,9 @@ const styles = StyleSheet.create({
     marginVertical: 10,
   },
   detailsBox: {
-    backgroundColor: '#4f4f4f', // ash color
+    backgroundColor: '#333333D1',
     borderRadius: 10,
-    padding: 15,
+    padding: 30,
     marginVertical: 20,
     marginBottom: 80,
   },
@@ -353,11 +372,12 @@ const styles = StyleSheet.create({
   detailLabel: {
     fontSize: RFValue(13),
     color: '#fff',
-    fontWeight: '500',
+    fontWeight: '400',
   },
   detailValue: {
-    fontSize: RFValue(13),
+    fontSize: RFValue(12),
     color: '#fff',
+    fontWeight: '700',
   },
   dateRow: {
     flexDirection: 'row',

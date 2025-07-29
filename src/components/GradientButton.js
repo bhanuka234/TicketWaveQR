@@ -35,7 +35,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   btnStyles:{
-    marginVertical: height * 0.01,
+    marginVertical: 5,
   },
   text: {
     color: '#fff',

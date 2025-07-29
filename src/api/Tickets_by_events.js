@@ -9,7 +9,7 @@ const Tickets_by_events = (token, eid) => (
     body: JSON.stringify({
       eid: eid,
       token: token[1],
-    }), 
+    }),
   })
     .then((res) => res.json())
     .then((json) => {

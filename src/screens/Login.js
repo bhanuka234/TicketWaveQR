@@ -103,7 +103,7 @@ class Login extends Component {
         setTimeout(() => {
           this.hideAlert();
           navigate('GetStart');
-        }, 1500);
+        }, 2000);
       } else {
         this.showAlert('Login Failed', 'Incorrect username or password.');
       }
@@ -196,6 +196,7 @@ class Login extends Component {
           title={this.state.alertTitle}
           message={this.state.alertMessage}
           onClose={this.hideAlert}
+          hideButton={this.state.alertHideButton}
         />
       </>
     );
