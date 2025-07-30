@@ -236,6 +236,10 @@ const styles = StyleSheet.create({
     marginTop: height * 0.01,
     textAlign: 'center',
   },
+  cardContainer: {
+  paddingBottom: height * 0.12,
+}
+
 });
 
 export default History;

@@ -21,6 +21,7 @@ import EventDetails from '../api/EventDetails';
 import getToken from '../api/getToken';
 import RNHTMLtoPDF from 'react-native-html-to-pdf';
 import {RFValue} from 'react-native-responsive-fontsize';
+import CustomAlert from '../components/CustomAlert';
 
 const { width, height } = Dimensions.get('window');
 
@@ -37,6 +38,10 @@ class ListTickets extends Component {
       tickets: [],
       eventFrom: '',
       eventTo: '',
+      showCustomAlert: false,
+      alertTitle: '',
+      alertMessage: '',
+      alertType: '', 
     };
   }
 
@@ -69,81 +74,48 @@ class ListTickets extends Component {
       console.error('Failed to fetch ticket/event data:', error);
     }
   }
+  showCustomAlert = (title, message, type) => {
+    this.setState({
+      showCustomAlert: true,
+      alertTitle: title,
+      alertMessage: message,
+      alertType: type,
+    });
+  };
+
+  hideCustomAlert = () => {
+    this.setState({ showCustomAlert: false }
+    );
+  };
 
   handleBack = () => {
     this.props.navigation.goBack();
   };
-  async requestStoragePermission() {
-    if (Platform.OS === 'android') {
-      try {
-        const granted = await PermissionsAndroid.requestMultiple([
-          PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
-          PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
-          PermissionsAndroid.PERMISSIONS.READ_MEDIA_IMAGES,
-          PermissionsAndroid.PERMISSIONS.READ_MEDIA_VIDEO,
-          PermissionsAndroid.PERMISSIONS.READ_MEDIA_DOCUMENTS,
-        ]);
-
-        const readGranted =
-          granted['android.permission.READ_EXTERNAL_STORAGE'] ===
-          PermissionsAndroid.RESULTS.GRANTED;
-        const writeGranted =
-          granted['android.permission.WRITE_EXTERNAL_STORAGE'] ===
-          PermissionsAndroid.RESULTS.GRANTED;
-
-        if (readGranted && writeGranted) {
-          console.log('Storage permissions granted');
-          return true;
-        } else {
-          console.warn('Storage permissions denied');
-          return false;
-        }
-      } catch (err) {
-        console.warn(err);
-        return false;
-      }
-    }
-    return true; // iOS doesn't require these permissions
-  }
   generatePdf = async () => {
-    const permissionGranted = await this.requestStoragePermission();
-    if (!permissionGranted) {
-      Alert.alert(
-        'Permission Denied',
-        'Storage permission is required to save the PDF.',
-      );
-      return;
-    }
+  const { title } = this.props.route.params;
+  const { soldTickets, usedTickets, remainingTickets, tickets, eventTime } = this.state;
 
-    const {title} = this.props.route.params;
-    const {soldTickets, usedTickets, remainingTickets, tickets, eventTime} =
-      this.state;
+  const ticketRows = tickets
+    .map((ticket, index) => {
+      const isChecked = ticket.ticket_status === 'checked';
+      const rowStyle = isChecked
+        ? 'background-color: #d4edda; color: #155724;'
+        : 'background-color: #f8d7da; color: #721c24;';
 
-    const ticketRows = tickets
-      .map((ticket, index) => {
-        const isChecked = ticket.ticket_status === 'checked';
-        const rowStyle = isChecked
-          ? 'background-color: #d4edda; color: #155724;' // green for checked
-          : 'background-color: #f8d7da; color: #721c24;'; // red for unchecked
-
-        return `
+      return `
         <tr style="${rowStyle}">
           <td style="border: 1px solid #999; padding: 6px;">${index + 1}</td>
-          <td style="border: 1px solid #999; padding: 6px;">${
-            ticket.customer_name
-          }</td>
+          <td style="border: 1px solid #999; padding: 6px;">${ticket.customer_name}</td>
           <td style="border: 1px solid #999; padding: 6px;">${ticket.email}</td>
-          <td style="border: 1px solid #999; padding: 6px;">${
-            ticket.qr_code
-          }</td>
+          <td style="border: 1px solid #999; padding: 6px;">${ticket.qr_code}</td>
           <td style="border: 1px solid #999; padding: 6px; font-weight: bold;">
             ${ticket.ticket_status || 'Not Checked'}
           </td>
         </tr>`;
-      })
-      .join('');
+    })
+    .join('');
 
-    const htmlContent = `
+  const htmlContent = `
     <div style="font-family: Arial, sans-serif; padding: 20px;">
       <h1 style="text-align:center; color:#333;">${title}</h1>
       <p style="text-align:center; color:#333;">${eventTime}
@@ -171,21 +143,29 @@ class ListTickets extends Component {
     </div>
   `;
 
-    try {
-      const options = {
-        html: htmlContent,
-        fileName: `TicketStats_${Date.now()}`,
-        directory: 'Download',
-      };
+  try {
+    const options = {
+      html: htmlContent,
+      fileName: `TicketStats_${Date.now()}`,
+      // No directory specified – saves to app's private cache dir
+    };
 
-      const file = await RNHTMLtoPDF.convert(options);
-      Alert.alert('Success', `PDF saved to:\n${file.filePath}`);
-      console.log('PDF generated at:', file.filePath);
-    } catch (error) {
-      console.error('PDF generation error:', error);
-      Alert.alert('Error', 'Failed to generate PDF.');
-    }
-  };
+    const file = await RNHTMLtoPDF.convert(options);
+this.showCustomAlert(
+      'Success',
+      `PDF saved to:\n${file.filePath}`,
+      'success'
+    );
+    console.log('PDF generated at:', file.filePath);
+  } catch (error) {
+    console.error('PDF generation error:', error);
+this.showCustomAlert(
+  'Error',
+  'Failed to generate PDF.',
+  'error'
+);
+  }
+};
 
   render() {
     const {title} = this.props.route.params;
@@ -323,6 +303,15 @@ class ListTickets extends Component {
               />
             </ScrollView>
           </SafeAreaView>
+          <CustomAlert
+                    visible={this.state.showCustomAlert}
+                    title={this.state.alertTitle}
+                    message={this.state.alertMessage}
+                    onClose={this.hideCustomAlert}
+                    onConfirm={this.hideCustomAlert}
+                    showCancel={false}
+                    confirmText="OK"
+                  />
         </GradientBackground>
       </>
     );
