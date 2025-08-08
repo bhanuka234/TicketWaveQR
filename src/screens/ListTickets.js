@@ -73,6 +73,7 @@ class ListTickets extends Component {
   handleBack = () => {
     this.props.navigation.goBack();
   };
+  
   async requestStoragePermission() {
     if (Platform.OS === 'android') {
       try {
