@@ -1,4 +1,4 @@
-import React, {Component} from 'react';
+import React, { Component } from 'react';
 import {
   View,
   Text,
@@ -7,10 +7,9 @@ import {
   StatusBar,
   SafeAreaView,
   TouchableOpacity,
-  Alert,
+Modal, Pressable,
   ScrollView,
-  PermissionsAndroid,
-  Platform,
+
   Dimensions,
 } from 'react-native';
 import GradientBackground from '../components/GradientBackground';
@@ -20,7 +19,7 @@ import Tickets_by_events from '../api/Tickets_by_events';
 import EventDetails from '../api/EventDetails';
 import getToken from '../api/getToken';
 import RNHTMLtoPDF from 'react-native-html-to-pdf';
-import {RFValue} from 'react-native-responsive-fontsize';
+import { RFValue } from 'react-native-responsive-fontsize';
 import CustomAlert from '../components/CustomAlert';
 
 const { width, height } = Dimensions.get('window');
@@ -28,7 +27,7 @@ const { width, height } = Dimensions.get('window');
 class ListTickets extends Component {
   constructor(props) {
     super(props);
-    const {eid} = props.route.params;
+    const { eid } = props.route.params;
     this.state = {
       eid: parseInt(eid), // Set eid directly from route params
       totalTickets: 0,
@@ -41,7 +40,9 @@ class ListTickets extends Component {
       showCustomAlert: false,
       alertTitle: '',
       alertMessage: '',
-      alertType: '', 
+      alertType: '',
+      showPDFOptions: false,
+      pdfFilePath: '',
     };
   }
 
@@ -92,17 +93,17 @@ class ListTickets extends Component {
     this.props.navigation.goBack();
   };
   generatePdf = async () => {
-  const { title } = this.props.route.params;
-  const { soldTickets, usedTickets, remainingTickets, tickets, eventTime } = this.state;
+    const { title } = this.props.route.params;
+    const { soldTickets, usedTickets, remainingTickets, tickets, eventTime } = this.state;
 
-  const ticketRows = tickets
-    .map((ticket, index) => {
-      const isChecked = ticket.ticket_status === 'checked';
-      const rowStyle = isChecked
-        ? 'background-color: #d4edda; color: #155724;'
-        : 'background-color: #f8d7da; color: #721c24;';
+    const ticketRows = tickets
+      .map((ticket, index) => {
+        const isChecked = ticket.ticket_status === 'checked';
+        const rowStyle = isChecked
+          ? 'background-color: #d4edda; color: #155724;'
+          : 'background-color: #f8d7da; color: #721c24;';
 
-      return `
+        return `
         <tr style="${rowStyle}">
           <td style="border: 1px solid #999; padding: 6px;">${index + 1}</td>
           <td style="border: 1px solid #999; padding: 6px;">${ticket.customer_name}</td>
@@ -112,10 +113,10 @@ class ListTickets extends Component {
             ${ticket.ticket_status || 'Not Checked'}
           </td>
         </tr>`;
-    })
-    .join('');
+      })
+      .join('');
 
-  const htmlContent = `
+    const htmlContent = `
     <div style="font-family: Arial, sans-serif; padding: 20px;">
       <h1 style="text-align:center; color:#333;">${title}</h1>
       <p style="text-align:center; color:#333;">${eventTime}
@@ -143,32 +144,50 @@ class ListTickets extends Component {
     </div>
   `;
 
-  try {
-    const options = {
-      html: htmlContent,
-      fileName: `TicketStats_${Date.now()}`,
-      // No directory specified – saves to app's private cache dir
-    };
+    try {
+      const options = {
+        html: htmlContent,
+        fileName: `TicketStats_${Date.now()}`,
+        directory: 'Documents',
+      };
 
-    const file = await RNHTMLtoPDF.convert(options);
-this.showCustomAlert(
-      'Success',
-      `PDF saved to:\n${file.filePath}`,
-      'success'
-    );
-    console.log('PDF generated at:', file.filePath);
-  } catch (error) {
-    console.error('PDF generation error:', error);
-this.showCustomAlert(
-  'Error',
-  'Failed to generate PDF.',
-  'error'
-);
-  }
-};
+      const file = await RNHTMLtoPDF.convert(options);
+
+      // set state (for your popup etc.) but also RETURN the path
+      this.setState({
+        pdfFilePath: file.filePath,
+        showPDFOptions: true,
+      });
+
+      return file.filePath;   // <-- important
+    } catch (error) {
+      console.error('PDF generation error:', error);
+      this.showCustomAlert('Error', 'Failed to generate PDF.', 'error');
+      return null;
+    }
+  };
+  // inside class ListTickets
+  ensurePdfReady = async () => {
+    if (this.state.pdfFilePath) return this.state.pdfFilePath;
+    await this.generatePdf();                 // will set state.pdfFilePath
+    return this.state.pdfFilePath;
+  };
+
+
+
+  downloadPdf = async () => {
+    const path = await this.ensurePdfReady();
+    if (!path) return this.showCustomAlert('Error', 'No PDF path.', 'error');
+
+    this.setState({ showPDFOptions: false });
+    this.showCustomAlert('Success', `PDF saved to:\n${path}`, 'success');
+  };
+
+
+
 
   render() {
-    const {title} = this.props.route.params;
+    const { title } = this.props.route.params;
 
     return (
       <>
@@ -179,7 +198,7 @@ this.showCustomAlert(
         />
         <GradientBackground>
           <SafeAreaView style={styles.safe}>
-            <ScrollView contentContainerStyle={{flexGrow: 1}}>
+            <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
               <View style={styles.header}>
                 <TouchableOpacity onPress={this.handleBack}>
                   <View style={styles.backContent}>
@@ -266,14 +285,14 @@ this.showCustomAlert(
                 </View>
               </View>
               <GradientButton text={
-                  <View style={styles.scanContent}>
-                    <Image
-                      source={require('../assets/oHistory.png')}
-                      style={styles.historyIcon}
-                    />
-                    <Text style={styles.scanText}>History</Text>
-                  </View>
-                }
+                <View style={styles.scanContent}>
+                  <Image
+                    source={require('../assets/oHistory.png')}
+                    style={styles.historyIcon}
+                  />
+                  <Text style={styles.scanText}>History</Text>
+                </View>
+              }
                 style={styles.historyBtn}
                 onPress={() =>
                   this.props.navigation.navigate('History', {
@@ -304,14 +323,50 @@ this.showCustomAlert(
             </ScrollView>
           </SafeAreaView>
           <CustomAlert
-                    visible={this.state.showCustomAlert}
-                    title={this.state.alertTitle}
-                    message={this.state.alertMessage}
-                    onClose={this.hideCustomAlert}
-                    onConfirm={this.hideCustomAlert}
-                    showCancel={false}
-                    confirmText="OK"
-                  />
+            visible={this.state.showCustomAlert}
+            title={this.state.alertTitle}
+            message={this.state.alertMessage}
+            onClose={this.hideCustomAlert}
+            onConfirm={this.hideCustomAlert}
+            showCancel={false}
+            confirmText="OK"
+          />
+          {this.state.showPDFOptions && (
+            <Modal
+  visible={this.state.showPDFOptions}
+  transparent
+  animationType="fade"
+  onRequestClose={() => this.setState({ showPDFOptions: false })}
+>
+  <View style={styles.modalBackdrop}>
+    {/* tap outside to close (optional) */}
+    <Pressable
+      onPress={() => this.setState({ showPDFOptions: false })}
+      style={StyleSheet.absoluteFillObject}
+    />
+    <View style={styles.popupBox}>
+      <GradientButton
+        text={<Text style={styles.popupButtonText}>View PDF</Text>}
+        onPress={async () => {
+          const path = await this.ensurePdfReady();
+          if (!path) return this.showCustomAlert('Error', 'No PDF path.', 'error');
+          this.setState({ showPDFOptions: false });
+          this.props.navigation.navigate('PdfViewer', { filePath: path });
+        }}
+        style={styles.popupButton}
+      />
+      <GradientButton
+        text={<Text style={styles.popupButtonText}>Download PDF</Text>}
+        onPress={this.downloadPdf}
+        style={styles.popupButton}
+      />
+    </View>
+  </View>
+</Modal>
+
+          )}
+
+
         </GradientBackground>
       </>
     );
@@ -321,7 +376,7 @@ this.showCustomAlert(
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    paddingHorizontal:  width * 0.04,
+    paddingHorizontal: width * 0.04,
   },
   header: {
     flexDirection: 'row',
@@ -335,7 +390,7 @@ const styles = StyleSheet.create({
     color: '#fff',
     textAlign: 'left',
     // marginTop: 10,
-    paddingHorizontal:  width * 0.02,
+    paddingHorizontal: width * 0.02,
   },
   backContent: {
     flexDirection: 'row',
@@ -353,7 +408,7 @@ const styles = StyleSheet.create({
   detailsBox: {
     backgroundColor: '#333333D1',
     borderRadius: 10,
-    padding:  width * 0.05,
+    padding: width * 0.05,
     marginVertical: height * 0.02,
     marginBottom: height * 0.05,
   },
@@ -436,6 +491,40 @@ const styles = StyleSheet.create({
   btnTextWrap: {
     paddingHorizontal: 0,
   },
+  modalBackdrop: {
+  flex: 1,
+  backgroundColor: 'rgba(0,0,0,0.55)', // <- the fade
+  justifyContent: 'center',
+  alignItems: 'center',
+},
+
+popupBox: {
+  width: '92%',
+  padding: 20,
+  borderRadius: 10,
+  // backgroundColor: '#111',
+  alignItems: 'stretch',
+  // (Android) shadow/elevation if you want:
+  elevation: 8,
+},
+
+popupButton: {
+  alignSelf: 'stretch',
+  width: '100%',
+  minHeight: 56,
+  marginVertical: 12,
+},
+
+popupButtonText: {
+  color: '#fff',
+  fontSize: RFValue(15),
+  fontWeight: '600',
+  textAlign: 'center',
+  paddingVertical: 14,
+},
+
+
+
 });
 
 export default ListTickets;

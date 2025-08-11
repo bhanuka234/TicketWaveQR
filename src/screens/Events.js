@@ -7,7 +7,7 @@ import {
   StatusBar,
   SafeAreaView,
   ActivityIndicator,
-  BackHandler,
+  // BackHandler,
   TouchableOpacity,
   Dimensions,
 } from 'react-native';
@@ -32,10 +32,10 @@ class Events extends Component {
   }
 
   componentDidMount() {
-    this.backHandler = BackHandler.addEventListener(
-      'hardwareBackPress',
-      () => true,
-    );
+    // this.backHandler = BackHandler.addEventListener(
+    //   'hardwareBackPress',
+    //   () => true,
+    // );
 
     getToken()
       .then(token => EventsApi(token))
@@ -51,11 +51,11 @@ class Events extends Component {
       });
   }
 
-  componentWillUnmount() {
-    if (this.backHandler) {
-      this.backHandler.remove();
-    }
-  }
+  // componentWillUnmount() {
+  //   if (this.backHandler) {
+  //     this.backHandler.remove();
+  //   }
+  // }
 
 
   confirmLogout = () => {
