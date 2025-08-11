@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, {Component} from 'react';
 import {
   View,
   Text,
@@ -8,16 +8,16 @@ import {
   Image,
   ActivityIndicator,
   FlatList,
-  Dimensions
+  Dimensions,
 } from 'react-native';
 import GradientBackground from '../components/GradientBackground';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import {SafeAreaView} from 'react-native-safe-area-context';
 import BottomNavBar from '../components/BottomNavBar';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Tickets_by_events from '../api/Tickets_by_events';
-import { RFValue } from 'react-native-responsive-fontsize';
+import {RFValue} from 'react-native-responsive-fontsize';
 
-const { width, height } = Dimensions.get('window');
+const {width, height} = Dimensions.get('window');
 
 class History extends Component {
   state = {
@@ -25,20 +25,24 @@ class History extends Component {
     loading: true,
   };
 
-  componentDidMount(){
+  componentDidMount() {
     this.initializeData();
   }
 
   initializeData = async () => {
-  let eid = this.props.route?.params?.eid;
-  if (!eid) {
-    const storedEid = await AsyncStorage.getItem('@selectedEid');
-    if (storedEid) {
-      eid = parseInt(storedEid);
+    let eid = this.props.route?.params?.eid;
+    if (!eid) {
+      const storedEid = await AsyncStorage.getItem('@selectedEid');
+      if (storedEid) {
+        eid = parseInt(storedEid);
+      }
     }
-  }
-  this.fetchScannedTickets(eid);
-};
+    this.fetchScannedTickets(eid);
+  };
+
+  handleBack = () => {
+    this.props.navigation.goBack();
+  };
 
   fetchScannedTickets = async (eid = null) => {
     try {
@@ -48,9 +52,8 @@ class History extends Component {
 
       const event = await Tickets_by_events([url, token], eid);
 
-
       if (!event) {
-        this.setState({ loading: false });
+        this.setState({loading: false});
         return;
       }
 
@@ -63,16 +66,14 @@ class History extends Component {
           customerName: ticket.customer_name,
         }));
 
-      this.setState({ tickets, loading: false });
-
+      this.setState({tickets, loading: false});
     } catch (error) {
       console.error('Failed to fetch tickets:', error);
-      this.setState({ loading: false });
+      this.setState({loading: false});
     }
   };
 
-
-  renderTicket = ({ item }) => (
+  renderTicket = ({item}) => (
     <TouchableOpacity
       onPress={() =>
         this.props.navigation.navigate('TicketView', {
@@ -115,26 +116,35 @@ class History extends Component {
         />
         <GradientBackground>
           <SafeAreaView style={styles.safe}>
-            <View style={styles.header}>
-              <Text style={styles.backText}>History</Text>
-            </View>
+              <View style={styles.header}>
+                <TouchableOpacity onPress={this.handleBack}>
+                  <View style={styles.backContent}>
+                    <Image
+                      source={require('../assets/back.png')}
+                      style={styles.backIcon}
+                      resizeMode="contain"
+                    />
+                    <Text style={styles.backText}>History</Text>
+                  </View>
+                </TouchableOpacity>
+              </View>
 
-            {/* Ticket cards list */}
-            {this.state.loading ? (
-              <ActivityIndicator
-                size="90"
-                color="#ffffff"
-                style={styles.spinner}
-              />
-            ) : (
-              <FlatList
-                data={this.state.tickets}
-                renderItem={this.renderTicket}
-                keyExtractor={item => item.id.toString()}
-                contentContainerStyle={styles.cardContainer}
-              />
-            )}
-            <BottomNavBar />
+              {/* Ticket cards list */}
+              {this.state.loading ? (
+                <ActivityIndicator
+                  size="90"
+                  color="#ffffff"
+                  style={styles.spinner}
+                />
+              ) : (
+                <FlatList
+                  data={this.state.tickets}
+                  renderItem={this.renderTicket}
+                  keyExtractor={item => item.id.toString()}
+                  contentContainerStyle={styles.cardContainer}
+                />
+              )}
+              <BottomNavBar />
           </SafeAreaView>
         </GradientBackground>
       </>
@@ -150,10 +160,8 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: height * 0.2,
-    marginTop: height * 0.02,
-    marginBottom: height * 0.03,
+    marginLeft: height * -0.05,
+    justifyContent: 'space-between',
   },
   backContent: {
     flexDirection: 'row',

@@ -7,13 +7,16 @@ import {
   StatusBar,
   PermissionsAndroid,
   Dimensions,
+  TouchableOpacity,
+  Image,
+  SafeAreaView,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Camera, CameraType } from 'react-native-camera-kit';
 import BottomNavBar from '../components/BottomNavBar';
 import CustomAlert from '../components/CustomAlert';
 
-const { width, height } = Dimensions.get('window');
+const {width, height} = Dimensions.get('window');
 
 class ScanBarcode extends Component {
   constructor(props) {
@@ -73,6 +76,10 @@ class ScanBarcode extends Component {
       this.setState({ cameraPermissionGranted: true });
     }
   }
+
+  handleBack = () => {
+    this.props.navigation.goBack();
+  };
 
   resetScan = () => {
     this.setState({
@@ -176,6 +183,20 @@ class ScanBarcode extends Component {
           backgroundColor="transparent"
           barStyle="light-content"
         />
+        <SafeAreaView style={styles.safe}>
+          <View style={styles.header}>
+            <TouchableOpacity onPress={this.handleBack} style={styles.backBtn}>
+              <View style={styles.backContent}>
+                <Image
+                  source={require('../assets/back.png')}
+                  style={styles.backIcon}
+                  resizeMode="contain"
+                />
+                <Text style={styles.backText}>Back</Text>
+              </View>
+            </TouchableOpacity>
+          </View>
+        </SafeAreaView>
 
         {/* Camera View */}
         <Camera
@@ -187,7 +208,6 @@ class ScanBarcode extends Component {
           frameColor="green"
           style={styles.preview}
         />
-
         {/* Bottom Nav */}
         <View style={styles.bottomBarWrapper}>
           <BottomNavBar eid={this.state.eid} />
@@ -211,6 +231,29 @@ class ScanBarcode extends Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginLeft: -10,
+    backgroundColor: 'transparent', // <- Add this line
+    zIndex: 10, // Bring it above the camera
+    position: 'absolute', // Optional, to overlay on top
+    top: StatusBar.currentHeight || 0,
+    left: 0,
+    right: 0,
+    padding: 10,
+  },
+
+  backContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  backText: {
+    fontSize: 25,
+    color: '#FF71D2',
+    marginLeft: -30,
+    fontWeight: '500',
   },
   bottomBarWrapper: {
     position: 'absolute',
